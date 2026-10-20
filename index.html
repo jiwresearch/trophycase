@@ -245,7 +245,7 @@ function loadNFL(){if(nflState!=="idle")return;nflState="loading";
  fetch("data/nfl.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{const G=["active","hof","past"];
   d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport:"Football",born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
    awards:r[12].map(w=>{const t=d.awards[w[0]];const o={n:t[0],k:t[1],c:t[2],y:w[1]};if(w[2])o.x=w[2];return o}),wv:r[13],src:r[14],nfl:true,stories:[]};
-   a.line=[POS_NAME[a.pos]||a.pos,a.teams.length>1?`${a.teams.length} teams`:a.teams[0],a.grp==="active"?"Active":a.grp==="hof"?"Hall of Fame":null].filter(Boolean).join(" · ");
+   a.line=makeLine(a);
    byId[a.id]=a;ALL.push(a)});
   NFL_N=d.rows.length;nflState="ready";
   if(pendingHash&&byId[pendingHash]){stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
@@ -419,6 +419,11 @@ document.addEventListener("click",e=>{
 });
 
 const POS_NAME={QB:"Quarterback",RB:"Running back",WR:"Wide receiver",TE:"Tight end",OL:"Offensive line",DL:"Defensive line",LB:"Linebacker",DB:"Defensive back",K:"Kicker",P:"Punter",LS:"Long snapper",SPEC:"Special teams",FB:"Fullback",T:"Tackle",G:"Guard",C:"Center",DE:"Defensive end",DT:"Defensive tackle",CB:"Cornerback",S:"Safety"};
+const LINE_ORDER=["Pro Football Hall of Fame","Super Bowl Champion","NFL MVP","AFL MVP","Super Bowl MVP","NFL Championship","AFL Championship","NFL Defensive Player of the Year","NFL Offensive Player of the Year","First-team All-Pro","Pro Bowl"];
+function makeLine(a){const who=POS_NAME[a.pos]||a.pos||"Player";const t=a.teams;const tl=t.length<=2?t.join(" and "):`${t[0]}, ${t[1]} and ${t.length-2} other team${t.length>3?"s":""}`;
+ const aw=Object.fromEntries(a.awards.map(w=>[w.n,w]));const hl=[];for(const n of LINE_ORDER){if(aw[n]){const x=aw[n].x||1;const l={"Pro Football Hall of Fame":"Hall of Famer","Super Bowl Champion":"Super Bowl champion"}[n]||n;hl.push(x>1?`${x}× ${l}`:l)}if(hl.length===3)break}
+ return `${who} for the ${tl}, ${String(a.era).replace("–present"," to now")}.`+(hl.length?" "+hl.join(", ")+".":"")}
+
 function cardHTML(a){const meta=a.nfl?[a.pos,a.teams.at(-1),a.era].filter(Boolean).join(" · "):`${a.sport} · ${a.teams[0]||a.college}`;
  return `<button class="card" data-ath="${a.id}"><span class="nm">${esc(a.name)}</span><span class="ct">${total(a)}<small>ENTER ROOM</small></span><span class="meta">${esc(meta)}</span></button>`}
 function floorHTML(list,n){return list.slice(0,n).map(cardHTML).join("")+(list.length>n?`<button class="chip more" data-more="1">Show ${Math.min(FLOOR_STEP,list.length-n).toLocaleString()} more of ${(list.length-n).toLocaleString()}</button>`:"")}
@@ -625,18 +630,27 @@ function wrap(x,text,cx,y,maxW,lh,align){const words=String(text).split(" ");let
 const lastName=a=>a.name.split(" ").filter(p=>!/^(Jr\.|Sr\.)$/.test(p)).pop().toUpperCase();
 const ordn=n=>n+(["th","st","nd","rd"][(n%100-20)%10]||["th","st","nd","rd"][n%100]||"th");
 
+function expandYears(s){const out=[];String(s||"").split(/,\s*/).forEach(p=>{const m=p.match(/^(\d{4})\s*[–-]\s*(\d{4})$/);if(m){for(let y=+m[1];y<=+m[2];y++)out.push(y)}else if(/^\d{4}$/.test(p.trim()))out.push(+p)});return [...new Set(out)].sort((a,b)=>a-b)}
 function clippingsFor(a){
  const L=lastName(a);const out=[];
  const yr=s=>{const m=String(s).match(/\d{4}/g);return m?+m[m.length-1]:0};
- a.awards.forEach(w=>{const n=w.x||1;let h;
-  if(w.c==="Championships")h=n>1?`${L} WINS ${ordn(n).toUpperCase()} ${w.n.toUpperCase()}`:`${L} CAPTURES ${w.n.toUpperCase()}`;
-  else if(w.c==="Selections")h=n>1?`${L} EARNS ${ordn(n).toUpperCase()} ${w.n.toUpperCase()} NOD`:`${L} NAMED ${w.n.toUpperCase()}`;
-  else if(w.c==="International")h=`${L} TAKES ${w.n.toUpperCase()}`;
-  else if(w.c==="Honors & Service")h=`${L} RECEIVES ${w.n.toUpperCase()}`;
-  else h=n>1?`${L} NAMED ${w.n.toUpperCase()} FOR ${ordn(n).toUpperCase()} TIME`:`${L} NAMED ${w.n.toUpperCase()}`;
-  out.push({y:yr(w.y),h,b:`${a.name} adds ${n>1?"another "+w.n+", number "+n+" overall":"the "+w.n} to the case. On record: ${w.y}.`})});
- (a.stories||[]).forEach(s=>out.push({y:+s[0],h:s[1].toUpperCase(),b:s[2]}));
- out.sort((p,q)=>p.y-q.y);return out}
+ a.awards.forEach(w=>{const n=w.x||1;let h;const ys=expandYears(w.y);const N=w.n.toUpperCase();
+  if((w.c==="Championships"||w.c==="Individual")&&ys.length>1&&ys.length<=20){ys.forEach((y,i)=>{
+    const hh=w.c==="Championships"?(i?`${L} WINS ${ordn(i+1).toUpperCase()} ${N}`:`${L} CAPTURES ${N}`):(i?`${L} NAMED ${N} FOR ${ordn(i+1).toUpperCase()} TIME`:`${L} NAMED ${N}`);
+    out.push({y,h:hh,b:`${a.name}: ${w.n}, ${y}. That makes ${i+1} of the ${ys.length} on the shelf.`})});return}
+  if(w.c==="Championships")h=n>1?`${L} WINS ${ordn(n).toUpperCase()} ${N}`:`${L} CAPTURES ${N}`;
+  else if(w.c==="Selections")h=n>1?`${L} EARNS ${ordn(n).toUpperCase()} ${N} NOD`:`${L} NAMED ${N}`;
+  else if(w.c==="International")h=`${L} TAKES ${N}`;
+  else if(w.c==="Honors & Service")h=`${L} RECEIVES ${N}`;
+  else h=n>1?`${L} NAMED ${N} FOR ${ordn(n).toUpperCase()} TIME`:`${L} NAMED ${N}`;
+  out.push({y:yr(w.y),h,b:`${a.name} adds ${n>1?"another "+w.n+", number "+n+" overall":"the "+w.n} to the case.${w.y?" On record: "+w.y+".":""}`})});
+ (a.stories||[]).forEach(s=>out.push({y:+s[0]||9999,h:s[1].toUpperCase(),b:s[2]}));
+ if((a.stats||[]).length){const end=/present/.test(a.era)?new Date().getFullYear():(+(String(a.era).match(/(\d{4})\D*$/)||[])[1]||new Date().getFullYear());out.push({y:end,h:`${L}: BY THE NUMBERS`,b:"Career: "+a.stats.map(s=>`${s[1]} ${s[0].toLowerCase()}`).join(" · ")+"."})}
+ out.forEach(c=>{if(!c.y)c.y=9998});out.sort((p,q)=>p.y-q.y);return out}
+
+const ROOM_DATA={};
+function roomShard(id){let h=7;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;return h%256}
+async function roomDetails(a){if(!a.nfl||a._d)return;const k=roomShard(a.id);try{if(!ROOM_DATA[k])ROOM_DATA[k]=fetch(`data/rooms/${k}.json`).then(r=>r.ok?r.json():{});const d=await ROOM_DATA[k];const x=d[a.id];if(x){a.stories=x[0]||[];a.stats=x[1]||[]}}catch(e){}a._d=1}
 
 function clipTex(c,i){return canvasTex(560,760,(x,w,h)=>{x.fillStyle="#efe6d2";x.fillRect(0,0,w,h);const r=rand(11+i*7);for(let k=0;k<1400;k++){x.fillStyle=`rgba(120,90,40,${r()*.06})`;x.fillRect(r()*w,r()*h,2,2)}
  if(!c){x.fillStyle="#7a6a50";x.font="italic 500 30px 'Cormorant Garamond', Georgia, serif";x.textAlign="center";x.fillText("End of the scrapbook",w/2,h/2);return}
@@ -772,12 +786,13 @@ function closeRoom(){if(!RS)return;cancelAnimationFrame(RS.raf);RS.off.forEach(f
 
 const VIEWS=[{k:"stories",yaw:Math.PI/2,p:-.04,pos:[.55,1.6,.3],label:"Big moments"},{k:"wall",yaw:0,p:-.03,pos:[0,1.6,1.05],label:"Trophy wall"},{k:"clips",yaw:-Math.PI/2,p:-.17,pos:[-.05,1.6,.3],label:"Clippings"}];
 async function openRoom(a){
+ if(a.nfl&&!a._d){await roomDetails(a);const c=stack.at(-1);if(c.v!=="ath"||c.id!==a.id)return}
  closeRoom();
  const el=document.createElement("div");el.className="room";el.innerHTML=`
   <div class="r-stage"></div>
   <div class="r-top"><button class="r-btn" id="r-leave">← Leave room</button><div class="r-id"><div class="r-name">${esc(a.name)}</div><div class="r-facts">${a.born?`Born ${hubLink("born",a.born)} · `:""}${a.college==="—"?"No college":(a.colleges||[a.college]).map(c=>hubLink("college",c)).join(" / ")} · ${a.teams.map(t=>hubLink("team",t)).join(", ")}</div></div>
    <button class="r-btn" id="r-list-t" aria-expanded="false">Trophies (${total(a)})</button></div>
-  <aside class="r-list" id="r-list" hidden>${SHELVES.map(c=>[c,a.awards.filter(w=>w.c===c)]).filter(([,w])=>w.length).map(([c,ws])=>`<div class="r-cat">${c}</div>${ws.map(w=>`<button class="r-item" data-aw="${a.awards.indexOf(w)}">${esc(w.n)}<span>${w.x?"×"+w.x:""}</span></button>`).join("")}`).join("")}</aside>
+  <aside class="r-list" id="r-list" hidden>${(a.stats||[]).length?`<div class="r-cat">Career</div>${a.stats.map(s=>`<div class="r-item" style="cursor:default">${esc(s[0])}<span>${esc(s[1])}</span></div>`).join("")}`:""}${SHELVES.map(c=>[c,a.awards.filter(w=>w.c===c)]).filter(([,w])=>w.length).map(([c,ws])=>`<div class="r-cat">${c}</div>${ws.map(w=>`<button class="r-item" data-aw="${a.awards.indexOf(w)}">${esc(w.n)}<span>${w.x?"×"+w.x:""}</span></button>`).join("")}`).join("")}</aside>
   <div class="r-plaque" id="r-plaque" hidden></div>
   <div class="r-story" id="r-story" hidden></div>
   <nav class="r-nav" aria-label="Turn around the room"><button class="r-btn" data-turn="-1">◀ <span>Big moments</span></button><div class="r-where" id="r-where">Trophy wall</div><button class="r-btn" data-turn="1"><span>Clippings</span> ▶</button></nav>
