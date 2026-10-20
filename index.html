@@ -160,6 +160,7 @@ h2{font-size:20px}
 .lb-v{font-family:var(--display);font-size:13px;color:var(--brass-ink);white-space:nowrap;font-variant-numeric:tabular-nums}
 .lb-v small{font-family:var(--body);color:var(--muted);font-size:11.5px}
 @media (max-width:480px){.g-body{grid-template-columns:64px minmax(0,1fr)}.g-sil{width:64px}}
+.statepick{display:flex;gap:8px;align-items:center}.statepick select{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--ink);font:inherit;font-size:14px;max-width:240px}
 /* Walk-in room: its own lamp-lit world, single dark look on purpose */
 .room{position:fixed;inset:0;z-index:50;background:#0b0705;color:#efe4d0;font-family:var(--body)}
 .r-stage{position:absolute;inset:0}
@@ -221,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. West Virginia rooms compiled from public sources for demonstration and not yet checked against official records. NFL wing: rosters from nflverse; birthplaces and honors from Wikidata. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -255,7 +256,7 @@ function loadNFL(){if(nflState!=="idle")return;nflState="loading";
 let affFilter="all";
 const hashStr=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return h};
 const PAL_BORN=[["#7a2b22","#ead9b8"],["#2f4a3a","#d9b45a"],["#3b3a6b","#e2dccb"],["#5a4630","#efe3c8"],["#1f4f63","#e8c77f"],["#6b2f4a","#ead9b8"]];
-function figColors(a){const w=a.wv||[];if(w.includes("wvu"))return{jer:"#1d3561",trim:"#eaaa00",pants:"#eaaa00"};if(w.includes("marshall"))return{jer:"#00843d",trim:"#ffffff",pants:"#e9e9e2"};const p=PAL_BORN[hashStr(a.id)%PAL_BORN.length];return{jer:p[0],trim:p[1],pants:p[1]}}
+function figColors(a){const p=PAL_BORN[hashStr(a.id)%PAL_BORN.length];return{jer:p[0],trim:p[1],pants:p[1]}}
 const PORC="#ecdcc2",PORC_SH="#c9b394";
 
 function drawFigure(x,a,o){ // o: {x,y(feet),w,lift,dim,ink}
@@ -328,7 +329,7 @@ function poolView(host,cardEl,people){
  function setFocus(f){if(focus===f)return;focus=f;showCard();animate()}
  function enter(f){if(entering)return;setFocus(f);lift.set(f.a.id,1);entering={a:f.a,t:0};animate()}
  function showCard(){if(!focus){cardEl.innerHTML=`<div class="eyebrow">How it works</div><p class="who-n">Walk the field</p><p class="note">Hover or drag across the crowd to see who's who. Click anyone to step into their trophy room. The most decorated stand up front.</p>`;return}
-  const a=focus.a;const tags=[...(a.grp==="hof"?["Hall of Fame"]:[]),...(a.grp==="active"?["Active"]:[]),...(a.wv||[]).map(t=>({born:"Born in WV",wvu:"WVU",marshall:"Marshall"}[t]))].filter(Boolean);
+  const a=focus.a;const tags=[...(isHOF(a)?["Hall of Fame"]:[]),...(isActive(a)?["Active"]:[]),...(a.region?[a.region]:[])];
   cardEl.innerHTML=`<div class="eyebrow">${esc(a.sport)} · ${esc(a.era||"")}</div><p class="who-n">${esc(a.name)}</p><div class="who-tags">${tags.map(t=>`<span>${t}</span>`).join("")}</div><p class="who-l">${esc(a.line||"")}</p>
    <dl class="who-d"><dt>Born</dt><dd>${a.born?hubLink("born",a.born):"Not on record yet"}</dd><dt>College</dt><dd>${a.college==="—"?"None":(a.colleges||[a.college]).map(c=>hubLink("college",c)).join(" / ")}</dd><dt>Trophies</dt><dd>${total(a)}</dd>${a.src?`<dt>Source</dt><dd><a class="link" href="${esc(a.src)}" target="_blank" rel="noopener">${/wikipedia/.test(a.src)?"Wikipedia":"Pro Football Reference"} ↗</a></dd>`:""}</dl>
    <button class="enter" data-ath="${a.id}">Enter the room →</button>`}
@@ -355,16 +356,18 @@ const LAUNCH=Date.UTC(2026,9,17);
 const store={get(k,d){try{const v=localStorage.getItem("tc:"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("tc:"+k,JSON.stringify(v))}catch(e){}}};
 function todayKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function puzzleNo(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-LAUNCH)/864e5)+1}
-function dailyAthlete(){const pool=A.filter(a=>a.awards.length>=2&&(a.stories||[]).length).sort((p,q)=>p.id.localeCompare(q.id));return pool[(hashStr("tc"+todayKey())%pool.length)]}
+function gamePool(){return ALL.filter(a=>a.born&&total(a)>=2&&((a.stories||[]).length||isHOF(a)))}
+function dailyAthlete(){const pool=gamePool().sort((p,q)=>p.id.localeCompare(q.id));return pool[(hashStr("tc"+todayKey())%pool.length)]}
 function clueList(a){const top=[...a.awards].sort((p,q)=>({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[p.c])-({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[q.c]))[0];const st=(a.stories||[])[0];
  return[`Sport: ${a.sport} · Era: ${a.era}`,`Born in ${a.born}`,a.college&&a.college!=="—"?`College: ${a.college}`:`Went straight to the pros`,top?`On the shelf: ${top.n}${top.x?" ×"+top.x:""}`:`Played for ${a.teams[0]||"—"}`,st?`Big moment, ${st[0]}: “${st[1]}”`:`Teams: ${a.teams.join(", ")}`]}
 
+let _gn=null;function gameNames(){return _gn||(_gn=[...new Set(ALL.filter(a=>total(a)>=1).sort(byTrophies).slice(0,4000).map(a=>a.name))].sort())}
 function gameView(el){
  const a=dailyAthlete();if(!a){el.hidden=true;return}
- const key=todayKey(),no=puzzleNo();let s=store.get("g:"+key,{guesses:[],done:false,won:false});
+ const key=todayKey(),no=puzzleNo();let s=store.get("g2:"+key,{guesses:[],done:false,won:false});
  const clues=clueList(a);const MAX=5;
  function streak(){return store.get("streak",{n:0,last:null})}
- function finish(won){s.done=true;s.won=won;store.set("g:"+key,s);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
+ function finish(won){s.done=true;s.won=won;store.set("g2:"+key,s);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
  function shareText(){const marks=s.guesses.map(g=>g===a.id?"🏆":"⬛").join("");return`Trophy Case · Whose Case #${no}\n${marks} ${s.won?s.guesses.length+"/"+MAX:"X/"+MAX}`}
  function paint(){
   const shown=s.done?MAX:Math.min(MAX,s.guesses.length+1);
@@ -373,15 +376,15 @@ function gameView(el){
     <div class="g-main"><ol class="g-clues">${clues.slice(0,shown).map((c,i)=>`<li class="${i===shown-1&&!s.done?"new":""}">${esc(c)}</li>`).join("")}</ol>
     ${s.done?`<div class="g-res ${s.won?"win":"lose"}">${s.won?`Got it in ${s.guesses.length}. It's <b>${esc(a.name)}</b>.`:`Out of guesses. It was <b>${esc(a.name)}</b>.`}</div>
       <div class="g-act"><button class="enter" data-ath="${a.id}">Walk into ${esc(a.name.split(" ")[0])}'s room →</button><button class="r-copy" id="g-share">Copy result</button></div><p class="note">New case tomorrow.</p>`
-    :`<div class="g-guess"><input id="g-in" list="g-names" placeholder="Type a name" autocomplete="off" aria-label="Your guess"><datalist id="g-names">${A.map(p=>`<option value="${esc(p.name)}"></option>`).join("")}</datalist><button class="enter" id="g-go">Guess</button></div>
+    :`<div class="g-guess"><input id="g-in" list="g-names" placeholder="Type a name" autocomplete="off" aria-label="Your guess"><datalist id="g-names">${gameNames().map(n=>`<option value="${esc(n)}"></option>`).join("")}</datalist><button class="enter" id="g-go">Guess</button></div>
       <div class="g-tries">${s.guesses.map(g=>`<span>${esc((byId[g]||{}).name||g)}</span>`).join("")}<em>${MAX-s.guesses.length} guess${MAX-s.guesses.length===1?"":"es"} left${s.guesses.length?", next clue unlocked":""}</em></div><p class="g-msg" id="g-msg" aria-live="polite"></p>`}
     </div></div>`;
   const cv=el.querySelector(".g-sil"),x=cv.getContext("2d");x.clearRect(0,0,120,170);
   if(s.done){drawFigure(x,a,{x:60,y:160,w:62,lift:0,noShadow:true})}else{const sil={...a,id:a.id,wv:[]};x.save();drawFigure(x,sil,{x:60,y:160,w:62,lift:0,noShadow:true});x.globalCompositeOperation="source-in";x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#222";x.fillRect(0,0,120,170);x.restore();x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--panel").trim()||"#fff";x.font="700 34px Cinzel, Georgia, serif";x.textAlign="center";x.textBaseline="middle";x.fillText("?",60,95)}
   const go=el.querySelector("#g-go");if(go){const inp=el.querySelector("#g-in"),msg=el.querySelector("#g-msg");
-   const submit=()=>{const v=inp.value.trim().toLowerCase();if(!v)return;const p=A.find(q=>q.name.toLowerCase()===v)||A.find(q=>q.name.toLowerCase().includes(v)&&v.length>3);
+   const submit=()=>{const v=inp.value.trim().toLowerCase();if(!v)return;const p=(v===a.name.toLowerCase()?a:null)||ALL.filter(q=>q.name.toLowerCase()===v).sort(byTrophies)[0]||ALL.filter(q=>q.name.toLowerCase().includes(v)&&v.length>3).sort(byTrophies)[0];
     if(!p){msg.textContent="That name isn't in the field yet. Pick one from the list.";return}if(s.guesses.includes(p.id)){msg.textContent="Already guessed.";return}
-    s.guesses.push(p.id);if(p.id===a.id)finish(true);else if(s.guesses.length>=MAX)finish(false);else store.set("g:"+key,s);paint();if(!s.done)el.querySelector("#g-in")?.focus()};
+    s.guesses.push(p.id);if(p.id===a.id)finish(true);else if(s.guesses.length>=MAX)finish(false);else store.set("g2:"+key,s);paint();if(!s.done)el.querySelector("#g-in")?.focus()};
    go.onclick=submit;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit()}})}
   const sh=el.querySelector("#g-share");if(sh)sh.onclick=()=>{const t=shareText();const fail=()=>{sh.insertAdjacentHTML("afterend",`<textarea class="g-copy" readonly rows="2">${esc(t)}</textarea>`);const ta=el.querySelector(".g-copy");ta.focus();ta.select();sh.remove()};try{navigator.clipboard.writeText(t).then(()=>{sh.textContent="Copied"},fail)}catch(e){fail()}};
  }
@@ -389,10 +392,6 @@ function gameView(el){
 }
 
 // ================= HOMETOWN LEADERBOARD =================
-function townBoard(){const m={};ALL.filter(a=>(a.wv||[]).includes("born")).forEach(a=>{const t=a.born;(m[t]=m[t]||{t,n:0,tr:0,ppl:[]});m[t].n++;m[t].tr+=total(a);m[t].ppl.push(a)});
- const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
- return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-hub="born" data-name="${esc(r.t)}">${esc(r.t.replace(", WV",""))}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr}<small> · ${r.n} ${r.n===1?"athlete":"athletes"}</small></span></li>`).join("")}</ol>`}
-
 // ---------- state ----------
 let stack=[{v:"explore"}];
 const view=document.getElementById("view"),crumbs=document.getElementById("crumbs");
@@ -427,60 +426,78 @@ function wireMore(host,list){host.addEventListener("click",e=>{if(!e.target.clos
 
 const POOL_CAP=300,FLOOR_STEP=240;let floorN=FLOOR_STEP;
 const byTrophies=(x,y)=>total(y)-total(x)||((y.grp==="active")-(x.grp==="active"))||x.name.localeCompare(y.name);
-const inNFL=a=>a.nfl||(a.cur&&a.sport==="Football");
-function inScope(a,k){return k==="nfl"?inNFL(a):k==="all"?isWV(a):(a.wv||[]).includes(k)}
+let whoFilter="all",stateFilter="";
+const WHO=[["all","Everyone"],["active","Active"],["hof","Hall of Fame"]];
+const isHOF=a=>a.grp==="hof"||a.awards.some(w=>/^(Pro Football|Naismith|National Baseball|Hockey) Hall of Fame/.test(w.n)||w.n==="Pro Football Hall of Fame");
+const isActive=a=>a.grp==="active"||(a.cur&&/present/.test(a.era||""));
+function inWho(a,k){return k==="active"?isActive(a):k==="hof"?isHOF(a):true}
+const ready=()=>nflState==="ready"||nflState==="failed";
 
 let poolCleanup=null;
 function explore(){
  if(poolCleanup){poolCleanup();poolCleanup=null}
- const nflMode=affFilter==="nfl";
- const match=a=>(!sportFilter||a.sport===sportFilter)&&(query?hay(a).includes(query):inScope(a,affFilter));
+ if(!ready()){view.innerHTML=`<section class="stack-head"><div><div class="eyebrow">Opening the doors</div><h1>The Hall</h1><p class="lede">Every athlete's trophy room, in one building.</p></div></section><div class="pool" style="min-height:320px;display:grid;place-items:center"><p class="note" style="color:#fff">Bringing everyone in…</p></div>`;return}
+ const base=a=>(!sportFilter||a.sport===sportFilter)&&(!stateFilter||a.region===stateFilter);
+ const match=a=>base(a)&&(query?hay(a).includes(query):inWho(a,whoFilter));
  const list=ALL.filter(match).sort(byTrophies);
- const sports=[...new Set(ALL.filter(a=>inScope(a,affFilter)).map(a=>a.sport))].sort();
- const cnt=k=>k==="nfl"&&nflState!=="ready"?(nflState==="failed"?"–":"…"):ALL.filter(a=>inScope(a,k)).length.toLocaleString();
- const waiting=nflMode&&nflState!=="ready";
- const wvN=ALL.filter(isWV).length;
- const head=query?`<div class="eyebrow">Search · ${nflState==="ready"?"every athlete in the building":"loading the NFL wing…"}</div><h1>Results</h1>`
-  :nflMode?`<div class="eyebrow">Pro football · ${nflState==="ready"?NFL_N.toLocaleString()+" players since 1920":"loading"}</div><h1>The NFL Wing</h1><p class="lede">Everyone who made an NFL roster since 1920, plus the AFL and AAFC years. The ${POOL_CAP} most decorated stand in the field. Search or browse to find anyone else.</p>`
-  :`<div class="eyebrow">West Virginia · ${wvN.toLocaleString()} athletes</div><h1>The Field</h1><p class="lede">Everyone who came from West Virginia or made their name at WVU or Marshall, all in one place. Click anyone to walk into their trophy room.</p>`;
- const scopeSet=ALL.filter(a=>inScope(a,affFilter));
+ const scopeSet=ALL.filter(a=>base(a)&&inWho(a,whoFilter));
+ const sports=[...new Set(ALL.filter(a=>(!stateFilter||a.region===stateFilter)&&inWho(a,whoFilter)).map(a=>a.sport))].sort();
+ const cnt=k=>ALL.filter(a=>base(a)&&inWho(a,k)).length.toLocaleString();
+ const regions=Object.entries(ALL.reduce((m,a)=>{if(a.region&&(!sportFilter||a.sport===sportFilter))m[a.region]=(m[a.region]||0)+1;return m},{})).sort((x,y)=>x[0].localeCompare(y[0]));
+ const US=new Set(Object.keys(STATE_ABBR));const usR=regions.filter(([r])=>US.has(r)),abroad=regions.filter(([r])=>!US.has(r));
+ const where=stateFilter?`born in ${stateFilter}`:"";
+ const head=query?`<div class="eyebrow">Search · every athlete in the building</div><h1>Results</h1>`
+  :`<div class="eyebrow">${[sportFilter||"Every sport",stateFilter||"Everywhere"].join(" · ")} · ${scopeSet.length.toLocaleString()} athletes</div><h1>${stateFilter?esc(stateFilter):"The Hall"}</h1><p class="lede">${stateFilter?`Everyone ${where}, in one place. The most decorated stand up front. Click anyone to walk into their trophy room.`:`Every athlete's trophy room, in one building. The ${POOL_CAP} most decorated stand in the field. Search, pick a home state, or browse to find anyone else.`}</p>`;
  view.innerHTML=`
  <section class="stack-head"><div>${head}</div>
-  <div class="filters"><div class="chips" aria-label="Who">${[["all","All WV"],["born","Born in WV"],["wvu","WVU"],["marshall","Marshall"],["nfl","All NFL"]].map(([k,l])=>`<button class="chip ${affFilter===k&&!query?"on":""}" data-aff="${k}">${l} <b>${cnt(k)}</b></button>`).join("")}</div>
-  <div class="chips" aria-label="Sport">${["All",...sports].map(s=>`<button class="chip sm ${(s==="All"&&!sportFilter)||s===sportFilter?"on":""}" data-sport="${s}">${s}</button>`).join("")}</div></div></section>
+  <div class="filters"><div class="chips" aria-label="Who">${WHO.map(([k,l])=>`<button class="chip ${whoFilter===k&&!query?"on":""}" data-who="${k}">${l} <b>${cnt(k)}</b></button>`).join("")}</div>
+  <div class="chips" aria-label="Sport">${["All",...sports].map(s=>`<button class="chip sm ${(s==="All"&&!sportFilter)||s===sportFilter?"on":""}" data-sport="${s}">${s}</button>`).join("")}</div>
+  <label class="statepick"><span class="eyebrow">Home state</span><select id="statepick"><option value="">Anywhere</option><optgroup label="United States">${usR.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n.toLocaleString()})</option>`).join("")}</optgroup>${abroad.length?`<optgroup label="Outside the U.S.">${abroad.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n})</option>`).join("")}</optgroup>`:""}</select></label></div></section>
  <div class="stack-grid"><div class="pool" id="pool"></div><div class="side-col"><aside class="who" id="who" aria-live="polite"></aside><section class="game" id="game"></section></div></div>
  <div class="hall" style="margin-top:28px">
-  <section class="wall"><div class="eyebrow">${nflMode||query?"Where they were born":"Where they came from in West Virginia"}</div><div id="map"></div><p class="note">${nflMode?"Tap a state to see everyone born there.":"Tap a pin to open that hometown."}</p></section>
+  <section class="wall"><div class="eyebrow">${stateFilter?`Hometowns in ${esc(stateFilter)}`:"Where they were born"}</div><div id="map"></div><p class="note">${stateFilter?"Tap a pin to open that hometown.":"Tap a state to see everyone born there."}</p></section>
   <section class="aisles"><div class="aisle"><h2>BROWSE BY</h2>
     <div class="tabs" role="tablist">${Object.entries(DIMS).map(([k,d])=>`<button class="tab ${k===groupBy?"on":""}" data-dim="${k}" role="tab" aria-selected="${k===groupBy}">${d.label}</button>`).join("")}</div>
     <div class="chips">${groups(groupBy,scopeSet).filter(([,as])=>groupBy==="sport"||as.length>1).slice(0,40).map(([g,as])=>`<button class="chip" data-hub="${groupBy}" data-name="${esc(g)}">${esc(g)} <b>${as.length.toLocaleString()}</b></button>`).join("")}</div></div>
-   ${nflMode?`<div class="aisle"><h2>STATE LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">States ranked by the trophies their NFL natives won.</p>${stateBoard()}</div>`:`<div class="aisle"><h2>HOMETOWN LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">West Virginia towns ranked by the trophies their natives won.</p>${townBoard()}</div>`}</section>
+   ${stateFilter?`<div class="aisle"><h2>HOMETOWN LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">Towns in ${esc(stateFilter)} ranked by the trophies their natives won.</p>${townBoard(scopeSet)}</div>`:`<div class="aisle"><h2>STATE LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">States ranked by the trophies their natives won. Tap one to walk its field.</p>${stateBoard(scopeSet)}</div>`}</section>
  </div>
- <div class="floor-head"><div><div class="eyebrow">${list.length>POOL_CAP?"Everyone, by trophy count":"Everyone, by trophy count"}</div><h2>${list.length.toLocaleString()} athlete${list.length===1?"":"s"}${query?` matching “${esc(query)}”`:""}</h2></div></div>
- <div class="floor" id="floor">${waiting?`<p class="note">Opening the NFL wing…</p>`:(floorHTML(list,floorN)||`<p class="note">No one matches that yet. Try a school, team or town.</p>`)}</div>`;
+ <div class="floor-head"><div><div class="eyebrow">Everyone, by trophy count</div><h2>${list.length.toLocaleString()} athlete${list.length===1?"":"s"}${query?` matching “${esc(query)}”`:""}</h2></div></div>
+ <div class="floor" id="floor">${floorHTML(list,floorN)||`<p class="note">No one matches that yet. Try a school, team or town.</p>`}</div>`;
+ const reset=()=>{floorN=FLOOR_STEP;if(query){query="";document.getElementById("q").value=""}};
  view.querySelectorAll("[data-dim]").forEach(b=>b.onclick=()=>{groupBy=b.dataset.dim;explore()});
  view.querySelectorAll("[data-sport]").forEach(b=>b.onclick=()=>{sportFilter=b.dataset.sport==="All"?null:b.dataset.sport;floorN=FLOOR_STEP;explore()});
- view.querySelectorAll("[data-aff]").forEach(b=>b.onclick=()=>{affFilter=b.dataset.aff;sportFilter=null;floorN=FLOOR_STEP;if(query){query="";document.getElementById("q").value=""}if(affFilter==="nfl")loadNFL();explore()});
+ view.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{whoFilter=b.dataset.who;reset();explore()});
+ view.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{stateFilter=b.dataset.state;reset();explore();window.scrollTo({top:0})});
+ document.getElementById("statepick").onchange=e=>{stateFilter=e.target.value;reset();explore()};
  wireMore(document.getElementById("floor"),list);
  const crowd=list.slice(0,POOL_CAP);
- if(waiting)document.getElementById("pool").innerHTML=`<p class="note" style="padding:24px;color:#fff">Opening the NFL wing…</p>`;
- else if(crowd.length)poolCleanup=poolView(document.getElementById("pool"),document.getElementById("who"),crowd);else document.getElementById("pool").innerHTML=`<p class="note" style="padding:24px;color:#fff">No one matches that yet.</p>`;
- drawMap(document.getElementById("map"),list.length?list:ALL.filter(isWV),!nflMode&&!query);
+ if(crowd.length)poolCleanup=poolView(document.getElementById("pool"),document.getElementById("who"),crowd);else document.getElementById("pool").innerHTML=`<p class="note" style="padding:24px;color:#fff">No one matches that yet.</p>`;
+ drawMap(document.getElementById("map"),list.length?list:ALL,stateFilter&&!query?stateFilter:"");
  gameView(document.getElementById("game"));
 }
 
-function drawMap(el,people,wvOnly){
+function townBoard(set){const m={};set.filter(a=>a.born&&a.region===stateFilter).forEach(a=>{const t=a.born;(m[t]=m[t]||{t,n:0,tr:0});m[t].n++;m[t].tr+=total(a)});
+ const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
+ if(!rows.length)return `<p class="note">No hometowns on record yet.</p>`;
+ return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-hub="born" data-name="${esc(r.t)}">${esc(r.t.replace(/,\s*[A-Z]{2}$/,""))}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr.toLocaleString()}<small> · ${r.n} ${r.n===1?"athlete":"athletes"}</small></span></li>`).join("")}</ol>`}
+function stateBoard(set){const m={};set.filter(a=>a.region&&STATE_ABBR[a.region]).forEach(a=>{const t=a.region;(m[t]=m[t]||{t,n:0,tr:0});m[t].n++;m[t].tr+=total(a)});
+ const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
+ if(!rows.length)return `<p class="note">No birthplaces on record yet.</p>`;
+ return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-state="${esc(r.t)}">${esc(r.t)}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr.toLocaleString()}<small> · ${r.n.toLocaleString()} athletes</small></span></li>`).join("")}</ol>`}
+const STATE_ABBR={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","California":"CA","Colorado":"CO","Connecticut":"CT","Delaware":"DE","District of Columbia":"DC","Florida":"FL","Georgia":"GA","Hawaii":"HI","Idaho":"ID","Illinois":"IL","Indiana":"IN","Iowa":"IA","Kansas":"KS","Kentucky":"KY","Louisiana":"LA","Maine":"ME","Maryland":"MD","Massachusetts":"MA","Michigan":"MI","Minnesota":"MN","Mississippi":"MS","Missouri":"MO","Montana":"MT","Nebraska":"NE","Nevada":"NV","New Hampshire":"NH","New Jersey":"NJ","New Mexico":"NM","New York":"NY","North Carolina":"NC","North Dakota":"ND","Ohio":"OH","Oklahoma":"OK","Oregon":"OR","Pennsylvania":"PA","Rhode Island":"RI","South Carolina":"SC","South Dakota":"SD","Tennessee":"TN","Texas":"TX","Utah":"UT","Vermont":"VT","Virginia":"VA","Washington":"WA","West Virginia":"WV","Wisconsin":"WI","Wyoming":"WY"};
+
+function drawMap(el,people,focus){
  people=people.filter(p=>p.lat!=null&&p.born);
- const others=wvOnly?people.filter(p=>!/,\s*WV$/.test(p.born)):[];if(wvOnly)people=people.filter(p=>!others.includes(p));
+ const others=focus?people.filter(p=>p.region!==focus):[];if(focus)people=people.filter(p=>p.region===focus);
  const away=people.filter(p=>!(p.lon>-130&&p.lon<-55&&p.lat>15&&p.lat<60));people=people.filter(p=>!away.includes(p));if(!people.length){el.innerHTML=`<p class="note">${away.length?"Born outside North America.":"No birthplaces on record yet."}</p>`;return}
- const agg=!wvOnly&&people.length>180;
+ const agg=!focus&&people.length>180;
  const W=720,H=460;
  const proj=d3.geoConicConformal().parallels([30,45]).rotate([agg?96:80,0]).fitExtent([[40,30],[W-90,H-30]],(()=>{const xs=people.map(p=>p.lon),ys=people.map(p=>p.lat);let x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);if(agg){x0=Math.max(x0,-124.5);x1=Math.min(x1,-67);y0=Math.max(y0,24.5);y1=Math.min(y1,49.5)}const cx=(x0+x1)/2,cy=(y0+y1)/2,sx=Math.max(3.2,(x1-x0)/2+.6),sy=Math.max(2,(y1-y0)/2+.5);return{type:"MultiPoint",coordinates:[[cx-sx,cy-sy],[cx+sx,cy+sy],[cx-sx,cy+sy],[cx+sx,cy-sy]]}})());
  const path=d3.geoPath(proj);
  const land=topojson.feature(WORLD,WORLD.objects.countries),st=topojson.mesh(STATES,STATES.objects.states,(a,b)=>a!==b);
  const towns={};people.forEach(a=>{const k=agg?a.region:a.born;const t=(towns[k]=towns[k]||{name:k,lat:0,lon:0,ppl:[]});t.ppl.push(a);t.lat+=a.lat;t.lon+=a.lon});
  Object.values(towns).forEach(t=>{t.lat/=t.ppl.length;t.lon/=t.ppl.length});
- const ranked=Object.values(towns).sort((a,b)=>b.ppl.length-a.ppl.length);const labelSet=new Set(ranked.slice(0,agg?14:9999).map(t=>t.name));
+ const ranked=Object.values(towns).sort((a,b)=>b.ppl.length-a.ppl.length);const labelSet=new Set(ranked.slice(0,agg?14:ranked.length>40?18:9999).map(t=>t.name));
  const svg=d3.create("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("role","img").attr("aria-label","Map of athlete birthplaces");
  svg.append("rect").attr("width",W).attr("height",H).attr("fill","var(--water)").attr("rx",6);
  svg.append("g").selectAll("path").data(land.features).join("path").attr("d",path).attr("fill",d=>d.id==="840"?"var(--land-us)":"var(--land)").attr("stroke","var(--line)").attr("stroke-width",.8);
@@ -490,10 +507,10 @@ function drawMap(el,people,wvOnly){
  const maxN=ranked[0].ppl.length;
  Object.values(towns).sort((a,b)=>a.lon-b.lon).forEach(t=>{
   const [x,y]=proj([t.lon,t.lat]);if(!isFinite(x)||x<0||x>W||y<0||y>H)return;
-  const r=agg?3+Math.sqrt(t.ppl.length/maxN)*22:Math.min(18,4+t.ppl.length*2.2);
+  const r=agg?3+Math.sqrt(t.ppl.length/maxN)*22:maxN>8?3+Math.sqrt(t.ppl.length/maxN)*15:Math.min(18,4+t.ppl.length*2.2);
   const p=g.append("g").attr("class","pin").attr("tabindex",0).attr("role","button").attr("aria-label",agg?`${t.name}: ${t.ppl.length} players`:`${t.name}: ${t.ppl.map(a=>a.name).join(", ")}`);
   const busy=people.length>24;
-  const lab=agg?(labelSet.has(t.name)?`${t.name} (${t.ppl.length.toLocaleString()})`:""):busy?(t.ppl.length>1?`${t.name.split(",")[0]} (${t.ppl.length})`:""):(t.ppl.length>1?`${t.name.split(",")[0]} (${t.ppl.length})`:t.ppl[0].name);
+  const lab=agg?(labelSet.has(t.name)?`${t.name} (${t.ppl.length.toLocaleString()})`:""):busy?(t.ppl.length>1&&labelSet.has(t.name)?`${t.name.split(",")[0]} (${t.ppl.length})`:""):(t.ppl.length>1?`${t.name.split(",")[0]} (${t.ppl.length})`:t.ppl[0].name);
   p.append("title").text(agg?`${t.name}: ${t.ppl.length.toLocaleString()} players`:t.ppl.length>1?`${t.name}: ${t.ppl.slice(0,30).map(a=>a.name).join(", ")}${t.ppl.length>30?"…":""}`:`${t.ppl[0].name}, ${t.name}`);
   const open=()=>agg?go({v:"hub",dim:"region",name:t.name}):t.ppl.length===1?go({v:"ath",id:t.ppl[0].id}):go({v:"hub",dim:"born",name:t.name});
   p.on("click",open).on("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}});
@@ -508,14 +525,9 @@ function drawMap(el,people,wvOnly){
   p.append("text").attr("x",lx).attr("y",ly).text(lab);
  });
  el.innerHTML="";el.appendChild(svg.node());
- if(others.length){const n=document.createElement("p");n.className="note";n.textContent=`${others.length.toLocaleString()} more were born outside West Virginia. Open a school or team to see them on the map.`;el.appendChild(n)}
- if(away.length&&!wvOnly){const n=document.createElement("p");n.className="note";const sh=away.slice(0,12);n.innerHTML=`Born off this map: ${sh.map(a=>`<button class="link" data-ath="${a.id}">${esc(a.name)}</button> (${esc(a.born)})`).join(", ")}${away.length>12?` and ${away.length-12} more`:""}`;el.appendChild(n)}
+ if(others.length){const n=document.createElement("p");n.className="note";n.textContent=`${others.length.toLocaleString()} more were born outside ${focus}.`;el.appendChild(n)}
+ if(away.length&&!focus){const n=document.createElement("p");n.className="note";const sh=away.slice(0,12);n.innerHTML=`Born off this map: ${sh.map(a=>`<button class="link" data-ath="${a.id}">${esc(a.name)}</button> (${esc(a.born)})`).join(", ")}${away.length>12?` and ${away.length-12} more`:""}`;el.appendChild(n)}
 }
-
-function stateBoard(){const m={};ALL.filter(a=>a.nfl&&a.region).forEach(a=>{const t=a.region;(m[t]=m[t]||{t,n:0,tr:0});m[t].n++;m[t].tr+=total(a)});
- const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
- if(!rows.length)return `<p class="note">Birthplaces are still being added.</p>`;
- return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-hub="region" data-name="${esc(r.t)}">${esc(r.t)}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr.toLocaleString()}<small> · ${r.n.toLocaleString()} players</small></span></li>`).join("")}</ol>`}
 
 function members(dim,name){return dim==="born"?ALL.filter(a=>a.born===name):ALL.filter(a=>DIMS[dim].get(a).includes(name))}
 function hub(dim,name){
