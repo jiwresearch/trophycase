@@ -222,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs.</p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -241,15 +241,20 @@ const byId=Object.fromEntries(A.map(a=>[a.id,a]));
 const hay=a=>a._h||(a._h=[a.name,a.pos||"",a.college,a.born,a.region,...a.teams].join(" ").toLowerCase());
 const isWV=a=>a.cur||(a.wv&&a.wv.length>0);
 let NFL_N=0,nflState="idle",pendingHash=null;
-function loadNFL(){if(nflState!=="idle")return;nflState="loading";
- fetch("data/nfl.json").then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}).then(d=>{const G=["active","hof","past"];
-  d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport:"Football",born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
-   awards:r[12].map(w=>{const t=d.awards[w[0]];const o={n:t[0],k:t[1],c:t[2],y:w[1]};if(w[2])o.x=w[2];return o}),wv:r[13],src:r[14],nfl:true,stories:[]};
+const GEN_FILES=["data/nfl.json","data/mlb.json"];
+function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=d.rooms||"rooms";
+  d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const src=d.srcfmt&&r[14]?d.srcfmt.replace("{0}",r[14][0]).replace("{id}",r[14]):r[14];
+   const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport,born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
+   awards:r[12].map(w=>{const t=d.awards[w[0]];const o={n:t[0],k:t[1],c:t[2],y:w[1]};if(w[2])o.x=w[2];return o}),wv:r[13],src,gen:true,rd,stories:[]};
    a.line=makeLine(a);
    byId[a.id]=a;ALL.push(a)});
-  NFL_N=d.rows.length;nflState="ready";
+  NFL_N+=d.rows.length}
+function loadNFL(){if(nflState!=="idle")return;nflState="loading";
+ Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))).then(res=>{
+  let ok=0;res.forEach(x=>{if(x.status==="fulfilled"){addGen(x.value);ok++}});_gn=null;
+  nflState=ok?"ready":"failed";
   if(pendingHash&&byId[pendingHash]){stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
-  pendingHash=null;const cur=stack.at(-1);if(cur.v!=="ath")render()}).catch(()=>{nflState="failed";pendingHash=null;const cur=stack.at(-1);if(cur.v!=="ath")render()})}
+  pendingHash=null;const cur=stack.at(-1);if(cur.v!=="ath")render()})}
 
 
 // ================= THE FIELD: a crowd of athlete figures =================
@@ -331,7 +336,7 @@ function poolView(host,cardEl,people){
  function showCard(){if(!focus){cardEl.innerHTML=`<div class="eyebrow">How it works</div><p class="who-n">Walk the field</p><p class="note">Hover or drag across the crowd to see who's who. Click anyone to step into their trophy room. The most decorated stand up front.</p>`;return}
   const a=focus.a;const tags=[...(isHOF(a)?["Hall of Fame"]:[]),...(isActive(a)?["Active"]:[]),...(a.region?[a.region]:[])];
   cardEl.innerHTML=`<div class="eyebrow">${esc(a.sport)} · ${esc(a.era||"")}</div><p class="who-n">${esc(a.name)}</p><div class="who-tags">${tags.map(t=>`<span>${t}</span>`).join("")}</div><p class="who-l">${esc(a.line||"")}</p>
-   <dl class="who-d"><dt>Born</dt><dd>${a.born?hubLink("born",a.born):"Not on record yet"}</dd><dt>College</dt><dd>${a.college==="—"?"None":(a.colleges||[a.college]).map(c=>hubLink("college",c)).join(" / ")}</dd><dt>Trophies</dt><dd>${total(a)}</dd>${a.src?`<dt>Source</dt><dd><a class="link" href="${esc(a.src)}" target="_blank" rel="noopener">${/wikipedia/.test(a.src)?"Wikipedia":"Pro Football Reference"} ↗</a></dd>`:""}</dl>
+   <dl class="who-d"><dt>Born</dt><dd>${a.born?hubLink("born",a.born):"Not on record yet"}</dd><dt>College</dt><dd>${a.college==="—"?"None":(a.colleges||[a.college]).map(c=>hubLink("college",c)).join(" / ")}</dd><dt>Trophies</dt><dd>${total(a)}</dd>${a.src?`<dt>Source</dt><dd><a class="link" href="${esc(a.src)}" target="_blank" rel="noopener">${/wikipedia/.test(a.src)?"Wikipedia":/baseball-reference/.test(a.src)?"Baseball Reference":"Pro Football Reference"} ↗</a></dd>`:""}</dl>
    <button class="enter" data-ath="${a.id}">Enter the room →</button>`}
  // hit test against where people actually stand (front-most first), so a raised neighbour never blocks anyone
  function hitAt(px,py){for(let i=figs.length-1;i>=0;i--){const f=figs[i],w=Math.max(f.w,8),h=w*2.1;if(px>f.x-w*.42&&px<f.x+w*.42&&py>f.y-h&&py<f.y+2)return f}
@@ -420,11 +425,13 @@ document.addEventListener("click",e=>{
 
 const POS_NAME={QB:"Quarterback",RB:"Running back",WR:"Wide receiver",TE:"Tight end",OL:"Offensive line",DL:"Defensive line",LB:"Linebacker",DB:"Defensive back",K:"Kicker",P:"Punter",LS:"Long snapper",SPEC:"Special teams",FB:"Fullback",T:"Tackle",G:"Guard",C:"Center",DE:"Defensive end",DT:"Defensive tackle",CB:"Cornerback",S:"Safety"};
 const LINE_ORDER=["Pro Football Hall of Fame","Super Bowl Champion","NFL MVP","AFL MVP","Super Bowl MVP","NFL Championship","AFL Championship","NFL Defensive Player of the Year","NFL Offensive Player of the Year","First-team All-Pro","Pro Bowl"];
-function makeLine(a){const who=POS_NAME[a.pos]||a.pos||"Player";const t=a.teams;const tl=t.length<=2?t.join(" and "):`${t[0]}, ${t[1]} and ${t.length-2} other team${t.length>3?"s":""}`;
- const aw=Object.fromEntries(a.awards.map(w=>[w.n,w]));const hl=[];for(const n of LINE_ORDER){if(aw[n]){const x=aw[n].x||1;const l={"Pro Football Hall of Fame":"Hall of Famer","Super Bowl Champion":"Super Bowl champion"}[n]||n;hl.push(x>1?`${x}× ${l}`:l)}if(hl.length===3)break}
+const POS_BB={P:"Pitcher",C:"Catcher","1B":"First baseman","2B":"Second baseman","3B":"Third baseman",SS:"Shortstop",LF:"Left fielder",CF:"Center fielder",RF:"Right fielder",OF:"Outfielder",DH:"Designated hitter"},
+LINE_ORDER_BB=["National Baseball Hall of Fame","World Series Champion","Negro League World Series Champion","MVP","Cy Young Award","Triple Crown","World Series MVP","Rookie of the Year","Gold Glove","Silver Slugger","All-Star","Negro Leagues All-Star"];
+function makeLine(a){const bb=a.sport==="Baseball";const who=(bb?POS_BB:POS_NAME)[a.pos]||a.pos||"Player";const t=a.teams;const tl=t.length<=2?t.join(" and "):`${t[0]}, ${t[1]} and ${t.length-2} other team${t.length>3?"s":""}`;
+ const aw=Object.fromEntries(a.awards.map(w=>[w.n,w]));const hl=[];for(const n of (bb?LINE_ORDER_BB:LINE_ORDER)){if(aw[n]){const x=aw[n].x||1;const l={"Pro Football Hall of Fame":"Hall of Famer","Super Bowl Champion":"Super Bowl champion","National Baseball Hall of Fame":"Hall of Famer","World Series Champion":"World Series champion","Negro League World Series Champion":"Negro League World Series champion"}[n]||n;hl.push(x>1?`${x}× ${l}`:l)}if(hl.length===3)break}
  return `${who} for the ${tl}, ${String(a.era).replace("–present"," to now")}.`+(hl.length?" "+hl.join(", ")+".":"")}
 
-function cardHTML(a){const meta=a.nfl?[a.pos,a.teams.at(-1),a.era].filter(Boolean).join(" · "):`${a.sport} · ${a.teams[0]||a.college}`;
+function cardHTML(a){const meta=a.gen?[a.pos,a.teams.at(-1),a.era].filter(Boolean).join(" · "):`${a.sport} · ${a.teams[0]||a.college}`;
  return `<button class="card" data-ath="${a.id}"><span class="nm">${esc(a.name)}</span><span class="ct">${total(a)}<small>ENTER ROOM</small></span><span class="meta">${esc(meta)}</span></button>`}
 function floorHTML(list,n){return list.slice(0,n).map(cardHTML).join("")+(list.length>n?`<button class="chip more" data-more="1">Show ${Math.min(FLOOR_STEP,list.length-n).toLocaleString()} more of ${(list.length-n).toLocaleString()}</button>`:"")}
 function wireMore(host,list){host.addEventListener("click",e=>{if(!e.target.closest("[data-more]"))return;floorN+=FLOOR_STEP;host.innerHTML=floorHTML(list,floorN)})}
@@ -650,7 +657,7 @@ function clippingsFor(a){
 
 const ROOM_DATA={};
 function roomShard(id){let h=7;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;return h%256}
-async function roomDetails(a){if(!a.nfl||a._d)return;const k=roomShard(a.id);try{if(!ROOM_DATA[k])ROOM_DATA[k]=fetch(`data/rooms/${k}.json`).then(r=>r.ok?r.json():{});const d=await ROOM_DATA[k];const x=d[a.id];if(x){a.stories=x[0]||[];a.stats=x[1]||[]}}catch(e){}a._d=1}
+async function roomDetails(a){if(!a.gen||a._d)return;const k=a.rd+"/"+roomShard(a.id);try{if(!ROOM_DATA[k])ROOM_DATA[k]=fetch(`data/${k}.json`).then(r=>r.ok?r.json():{});const d=await ROOM_DATA[k];const x=d[a.id];if(x){a.stories=x[0]||[];a.stats=x[1]||[]}}catch(e){}a._d=1}
 
 function clipTex(c,i){return canvasTex(560,760,(x,w,h)=>{x.fillStyle="#efe6d2";x.fillRect(0,0,w,h);const r=rand(11+i*7);for(let k=0;k<1400;k++){x.fillStyle=`rgba(120,90,40,${r()*.06})`;x.fillRect(r()*w,r()*h,2,2)}
  if(!c){x.fillStyle="#7a6a50";x.font="italic 500 30px 'Cormorant Garamond', Georgia, serif";x.textAlign="center";x.fillText("End of the scrapbook",w/2,h/2);return}
@@ -786,7 +793,7 @@ function closeRoom(){if(!RS)return;cancelAnimationFrame(RS.raf);RS.off.forEach(f
 
 const VIEWS=[{k:"stories",yaw:Math.PI/2,p:-.04,pos:[.55,1.6,.3],label:"Big moments"},{k:"wall",yaw:0,p:-.03,pos:[0,1.6,1.05],label:"Trophy wall"},{k:"clips",yaw:-Math.PI/2,p:-.17,pos:[-.05,1.6,.3],label:"Clippings"}];
 async function openRoom(a){
- if(a.nfl&&!a._d){await roomDetails(a);const c=stack.at(-1);if(c.v!=="ath"||c.id!==a.id)return}
+ if(a.gen&&!a._d){await roomDetails(a);const c=stack.at(-1);if(c.v!=="ath"||c.id!==a.id)return}
  closeRoom();
  const el=document.createElement("div");el.className="room";el.innerHTML=`
   <div class="r-stage"></div>
