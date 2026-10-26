@@ -1,0 +1,562 @@
+# Pages for the soccer build. Missing titles are reported and skipped.
+Ballon d'Or
+Ballon d'Or Féminin
+FIFA World Player of the Year
+The Best FIFA Men's Player
+The Best FIFA Women's Player
+FIFA World Cup awards
+FIFA Women's World Cup awards
+European Golden Shoe
+List of FIFA World Cup top goalscorers
+UEFA Men's Player of the Year Award
+UEFA Women's Player of the Year Award
+Kopa Trophy
+Yashin Trophy
+Golden Boy (award)
+PFA Players' Player of the Year
+FWA Footballer of the Year
+Premier League Golden Boot
+Premier League Player of the Season
+Pichichi Trophy
+Capocannoniere
+List of Bundesliga top scorers
+Ligue 1 top scorers
+Trophée UNFP du meilleur joueur
+List of La Liga top scorers
+Serie A Footballer of the Year
+Footballer of the Year in Germany
+Eredivisie top scorers
+Primeira Liga top scorers
+Bola de Prata
+South American Footballer of the Year
+African Footballer of the Year
+Asian Footballer of the Year
+CONCACAF Player of the Year
+Oceania Footballer of the Year
+IFFHS World's Best Player
+MLS Most Valuable Player Award
+MLS Golden Boot
+MLS Defender of the Year Award
+MLS Goalkeeper of the Year Award
+MLS Rookie of the Year Award
+MLS Best XI
+MLS Cup MVP
+MLS Supporters' Shield
+NWSL Most Valuable Player Award
+NWSL Golden Boot
+NWSL Defender of the Year
+NWSL Goalkeeper of the Year
+NWSL Rookie of the Year
+NWSL Best XI
+NWSL Championship MVP
+U.S. Soccer Player of the Year
+U.S. Soccer Female Player of the Year
+National Soccer Hall of Fame
+List of National Soccer Hall of Fame members
+English Football Hall of Fame
+Italian Football Hall of Fame
+FIFA 100
+FIFA World Cup All-Time Team
+List of European Cup and UEFA Champions League finals
+List of Copa Libertadores finals
+List of UEFA Women's Champions League finals
+List of FIFA World Cup finals
+List of FIFA Women's World Cup finals
+List of UEFA European Championship finals
+List of Copa América finals
+List of Africa Cup of Nations finals
+List of AFC Asian Cup finals
+List of CONCACAF Gold Cup finals
+List of foreign Premier League players
+List of Premier League winning players
+List of Premier League winning managers
+1930 FIFA World Cup squads
+1930 FIFA World Cup final
+1934 FIFA World Cup squads
+1934 FIFA World Cup final
+1938 FIFA World Cup squads
+1938 FIFA World Cup final
+1950 FIFA World Cup squads
+1950 FIFA World Cup final
+1954 FIFA World Cup squads
+1954 FIFA World Cup final
+1958 FIFA World Cup squads
+1958 FIFA World Cup final
+1962 FIFA World Cup squads
+1962 FIFA World Cup final
+1966 FIFA World Cup squads
+1966 FIFA World Cup final
+1970 FIFA World Cup squads
+1970 FIFA World Cup final
+1974 FIFA World Cup squads
+1974 FIFA World Cup final
+1978 FIFA World Cup squads
+1978 FIFA World Cup final
+1982 FIFA World Cup squads
+1982 FIFA World Cup final
+1986 FIFA World Cup squads
+1986 FIFA World Cup final
+1990 FIFA World Cup squads
+1990 FIFA World Cup final
+1994 FIFA World Cup squads
+1994 FIFA World Cup final
+1998 FIFA World Cup squads
+1998 FIFA World Cup final
+2002 FIFA World Cup squads
+2002 FIFA World Cup final
+2006 FIFA World Cup squads
+2006 FIFA World Cup final
+2010 FIFA World Cup squads
+2010 FIFA World Cup final
+2014 FIFA World Cup squads
+2014 FIFA World Cup final
+2018 FIFA World Cup squads
+2018 FIFA World Cup final
+2022 FIFA World Cup squads
+2022 FIFA World Cup final
+2026 FIFA World Cup squads
+2026 FIFA World Cup final
+1991 FIFA Women's World Cup squads
+1991 FIFA Women's World Cup final
+1995 FIFA Women's World Cup squads
+1995 FIFA Women's World Cup final
+1999 FIFA Women's World Cup squads
+1999 FIFA Women's World Cup final
+2003 FIFA Women's World Cup squads
+2003 FIFA Women's World Cup final
+2007 FIFA Women's World Cup squads
+2007 FIFA Women's World Cup final
+2011 FIFA Women's World Cup squads
+2011 FIFA Women's World Cup final
+2015 FIFA Women's World Cup squads
+2015 FIFA Women's World Cup final
+2019 FIFA Women's World Cup squads
+2019 FIFA Women's World Cup final
+2023 FIFA Women's World Cup squads
+2023 FIFA Women's World Cup final
+UEFA Euro 1960 squads
+UEFA Euro 1960 final
+UEFA Euro 1964 squads
+UEFA Euro 1964 final
+UEFA Euro 1968 squads
+UEFA Euro 1968 final
+UEFA Euro 1972 squads
+UEFA Euro 1972 final
+UEFA Euro 1976 squads
+UEFA Euro 1976 final
+UEFA Euro 1980 squads
+UEFA Euro 1980 final
+UEFA Euro 1984 squads
+UEFA Euro 1984 final
+UEFA Euro 1988 squads
+UEFA Euro 1988 final
+UEFA Euro 1992 squads
+UEFA Euro 1992 final
+UEFA Euro 1996 squads
+UEFA Euro 1996 final
+UEFA Euro 2000 squads
+UEFA Euro 2000 final
+UEFA Euro 2004 squads
+UEFA Euro 2004 final
+UEFA Euro 2008 squads
+UEFA Euro 2008 final
+UEFA Euro 2012 squads
+UEFA Euro 2012 final
+UEFA Euro 2016 squads
+UEFA Euro 2016 final
+UEFA Euro 2020 squads
+UEFA Euro 2020 final
+UEFA Euro 2024 squads
+UEFA Euro 2024 final
+UEFA Women's Euro 1962 squads
+UEFA Women's Euro 1984 squads
+UEFA Women's Euro 1997 squads
+UEFA Women's Euro 2001 squads
+UEFA Women's Euro 2005 squads
+UEFA Women's Euro 2009 squads
+UEFA Women's Euro 2013 squads
+UEFA Women's Euro 2017 squads
+UEFA Women's Euro 2022 squads
+UEFA Women's Euro 2025 squads
+1987 Copa América squads
+1989 Copa América squads
+1991 Copa América squads
+1993 Copa América squads
+1995 Copa América squads
+1997 Copa América squads
+1999 Copa América squads
+2001 Copa América squads
+2004 Copa América squads
+2007 Copa América squads
+2011 Copa América squads
+2015 Copa América squads
+2016 Copa América squads
+2019 Copa América squads
+2021 Copa América squads
+2024 Copa América squads
+1957 Africa Cup of Nations squads
+1958 Africa Cup of Nations squads
+1959 Africa Cup of Nations squads
+1960 Africa Cup of Nations squads
+1961 Africa Cup of Nations squads
+1962 Africa Cup of Nations squads
+1963 Africa Cup of Nations squads
+1964 Africa Cup of Nations squads
+1965 Africa Cup of Nations squads
+1966 Africa Cup of Nations squads
+1967 Africa Cup of Nations squads
+1968 Africa Cup of Nations squads
+1969 Africa Cup of Nations squads
+1970 Africa Cup of Nations squads
+1971 Africa Cup of Nations squads
+1972 Africa Cup of Nations squads
+1973 Africa Cup of Nations squads
+1974 Africa Cup of Nations squads
+1975 Africa Cup of Nations squads
+1976 Africa Cup of Nations squads
+1977 Africa Cup of Nations squads
+1978 Africa Cup of Nations squads
+1979 Africa Cup of Nations squads
+1980 Africa Cup of Nations squads
+1981 Africa Cup of Nations squads
+1982 Africa Cup of Nations squads
+1983 Africa Cup of Nations squads
+1984 Africa Cup of Nations squads
+1985 Africa Cup of Nations squads
+1986 Africa Cup of Nations squads
+1987 Africa Cup of Nations squads
+1988 Africa Cup of Nations squads
+1989 Africa Cup of Nations squads
+1990 Africa Cup of Nations squads
+1991 Africa Cup of Nations squads
+1992 Africa Cup of Nations squads
+1993 Africa Cup of Nations squads
+1994 Africa Cup of Nations squads
+1995 Africa Cup of Nations squads
+1996 Africa Cup of Nations squads
+1997 Africa Cup of Nations squads
+1998 Africa Cup of Nations squads
+1999 Africa Cup of Nations squads
+2000 Africa Cup of Nations squads
+2001 Africa Cup of Nations squads
+2002 Africa Cup of Nations squads
+2003 Africa Cup of Nations squads
+2004 Africa Cup of Nations squads
+2005 Africa Cup of Nations squads
+2006 Africa Cup of Nations squads
+2007 Africa Cup of Nations squads
+2008 Africa Cup of Nations squads
+2009 Africa Cup of Nations squads
+2010 Africa Cup of Nations squads
+2011 Africa Cup of Nations squads
+2012 Africa Cup of Nations squads
+2013 Africa Cup of Nations squads
+2014 Africa Cup of Nations squads
+2015 Africa Cup of Nations squads
+2016 Africa Cup of Nations squads
+2017 Africa Cup of Nations squads
+2018 Africa Cup of Nations squads
+2019 Africa Cup of Nations squads
+2020 Africa Cup of Nations squads
+2021 Africa Cup of Nations squads
+2022 Africa Cup of Nations squads
+2023 Africa Cup of Nations squads
+2024 Africa Cup of Nations squads
+2025 Africa Cup of Nations squads
+1956 AFC Asian Cup squads
+1960 AFC Asian Cup squads
+1964 AFC Asian Cup squads
+1968 AFC Asian Cup squads
+1972 AFC Asian Cup squads
+1976 AFC Asian Cup squads
+1980 AFC Asian Cup squads
+1984 AFC Asian Cup squads
+1988 AFC Asian Cup squads
+1992 AFC Asian Cup squads
+1996 AFC Asian Cup squads
+2000 AFC Asian Cup squads
+2004 AFC Asian Cup squads
+2007 AFC Asian Cup squads
+2011 AFC Asian Cup squads
+2015 AFC Asian Cup squads
+2019 AFC Asian Cup squads
+2023 AFC Asian Cup squads
+1991 CONCACAF Gold Cup squads
+1993 CONCACAF Gold Cup squads
+1996 CONCACAF Gold Cup squads
+1998 CONCACAF Gold Cup squads
+2000 CONCACAF Gold Cup squads
+2002 CONCACAF Gold Cup squads
+2003 CONCACAF Gold Cup squads
+2005 CONCACAF Gold Cup squads
+2007 CONCACAF Gold Cup squads
+2009 CONCACAF Gold Cup squads
+2011 CONCACAF Gold Cup squads
+2013 CONCACAF Gold Cup squads
+2015 CONCACAF Gold Cup squads
+2017 CONCACAF Gold Cup squads
+2019 CONCACAF Gold Cup squads
+2021 CONCACAF Gold Cup squads
+2023 CONCACAF Gold Cup squads
+2025 CONCACAF Gold Cup squads
+1956 European Cup final
+1957 European Cup final
+1958 European Cup final
+1959 European Cup final
+1960 European Cup final
+1961 European Cup final
+1962 European Cup final
+1963 European Cup final
+1964 European Cup final
+1965 European Cup final
+1966 European Cup final
+1967 European Cup final
+1968 European Cup final
+1969 European Cup final
+1970 European Cup final
+1971 European Cup final
+1972 European Cup final
+1973 European Cup final
+1974 European Cup final
+1975 European Cup final
+1976 European Cup final
+1977 European Cup final
+1978 European Cup final
+1979 European Cup final
+1980 European Cup final
+1981 European Cup final
+1982 European Cup final
+1983 European Cup final
+1984 European Cup final
+1985 European Cup final
+1986 European Cup final
+1987 European Cup final
+1988 European Cup final
+1989 European Cup final
+1990 European Cup final
+1991 European Cup final
+1992 European Cup final
+1993 UEFA Champions League final
+1994 UEFA Champions League final
+1995 UEFA Champions League final
+1996 UEFA Champions League final
+1997 UEFA Champions League final
+1998 UEFA Champions League final
+1999 UEFA Champions League final
+2000 UEFA Champions League final
+2001 UEFA Champions League final
+2002 UEFA Champions League final
+2003 UEFA Champions League final
+2004 UEFA Champions League final
+2005 UEFA Champions League final
+2006 UEFA Champions League final
+2007 UEFA Champions League final
+2008 UEFA Champions League final
+2009 UEFA Champions League final
+2010 UEFA Champions League final
+2011 UEFA Champions League final
+2012 UEFA Champions League final
+2013 UEFA Champions League final
+2014 UEFA Champions League final
+2015 UEFA Champions League final
+2016 UEFA Champions League final
+2017 UEFA Champions League final
+2018 UEFA Champions League final
+2019 UEFA Champions League final
+2020 UEFA Champions League final
+2021 UEFA Champions League final
+2022 UEFA Champions League final
+2023 UEFA Champions League final
+2024 UEFA Champions League final
+2025 UEFA Champions League final
+2010 UEFA Women's Champions League final
+2011 UEFA Women's Champions League final
+2012 UEFA Women's Champions League final
+2013 UEFA Women's Champions League final
+2014 UEFA Women's Champions League final
+2015 UEFA Women's Champions League final
+2016 UEFA Women's Champions League final
+2017 UEFA Women's Champions League final
+2018 UEFA Women's Champions League final
+2019 UEFA Women's Champions League final
+2020 UEFA Women's Champions League final
+2021 UEFA Women's Champions League final
+2022 UEFA Women's Champions League final
+2023 UEFA Women's Champions League final
+2024 UEFA Women's Champions League final
+2025 UEFA Women's Champions League final
+1960 Copa Libertadores finals
+1960 Copa Libertadores final
+1961 Copa Libertadores finals
+1961 Copa Libertadores final
+1962 Copa Libertadores finals
+1962 Copa Libertadores final
+1963 Copa Libertadores finals
+1963 Copa Libertadores final
+1964 Copa Libertadores finals
+1964 Copa Libertadores final
+1965 Copa Libertadores finals
+1965 Copa Libertadores final
+1966 Copa Libertadores finals
+1966 Copa Libertadores final
+1967 Copa Libertadores finals
+1967 Copa Libertadores final
+1968 Copa Libertadores finals
+1968 Copa Libertadores final
+1969 Copa Libertadores finals
+1969 Copa Libertadores final
+1970 Copa Libertadores finals
+1970 Copa Libertadores final
+1971 Copa Libertadores finals
+1971 Copa Libertadores final
+1972 Copa Libertadores finals
+1972 Copa Libertadores final
+1973 Copa Libertadores finals
+1973 Copa Libertadores final
+1974 Copa Libertadores finals
+1974 Copa Libertadores final
+1975 Copa Libertadores finals
+1975 Copa Libertadores final
+1976 Copa Libertadores finals
+1976 Copa Libertadores final
+1977 Copa Libertadores finals
+1977 Copa Libertadores final
+1978 Copa Libertadores finals
+1978 Copa Libertadores final
+1979 Copa Libertadores finals
+1979 Copa Libertadores final
+1980 Copa Libertadores finals
+1980 Copa Libertadores final
+1981 Copa Libertadores finals
+1981 Copa Libertadores final
+1982 Copa Libertadores finals
+1982 Copa Libertadores final
+1983 Copa Libertadores finals
+1983 Copa Libertadores final
+1984 Copa Libertadores finals
+1984 Copa Libertadores final
+1985 Copa Libertadores finals
+1985 Copa Libertadores final
+1986 Copa Libertadores finals
+1986 Copa Libertadores final
+1987 Copa Libertadores finals
+1987 Copa Libertadores final
+1988 Copa Libertadores finals
+1988 Copa Libertadores final
+1989 Copa Libertadores finals
+1989 Copa Libertadores final
+1990 Copa Libertadores finals
+1990 Copa Libertadores final
+1991 Copa Libertadores finals
+1991 Copa Libertadores final
+1992 Copa Libertadores finals
+1992 Copa Libertadores final
+1993 Copa Libertadores finals
+1993 Copa Libertadores final
+1994 Copa Libertadores finals
+1994 Copa Libertadores final
+1995 Copa Libertadores finals
+1995 Copa Libertadores final
+1996 Copa Libertadores finals
+1996 Copa Libertadores final
+1997 Copa Libertadores finals
+1997 Copa Libertadores final
+1998 Copa Libertadores finals
+1998 Copa Libertadores final
+1999 Copa Libertadores finals
+1999 Copa Libertadores final
+2000 Copa Libertadores finals
+2000 Copa Libertadores final
+2001 Copa Libertadores finals
+2001 Copa Libertadores final
+2002 Copa Libertadores finals
+2002 Copa Libertadores final
+2003 Copa Libertadores finals
+2003 Copa Libertadores final
+2004 Copa Libertadores finals
+2004 Copa Libertadores final
+2005 Copa Libertadores finals
+2005 Copa Libertadores final
+2006 Copa Libertadores finals
+2006 Copa Libertadores final
+2007 Copa Libertadores finals
+2007 Copa Libertadores final
+2008 Copa Libertadores finals
+2008 Copa Libertadores final
+2009 Copa Libertadores finals
+2009 Copa Libertadores final
+2010 Copa Libertadores finals
+2010 Copa Libertadores final
+2011 Copa Libertadores finals
+2011 Copa Libertadores final
+2012 Copa Libertadores finals
+2012 Copa Libertadores final
+2013 Copa Libertadores finals
+2013 Copa Libertadores final
+2014 Copa Libertadores finals
+2014 Copa Libertadores final
+2015 Copa Libertadores finals
+2015 Copa Libertadores final
+2016 Copa Libertadores finals
+2016 Copa Libertadores final
+2017 Copa Libertadores finals
+2017 Copa Libertadores final
+2018 Copa Libertadores finals
+2018 Copa Libertadores final
+2019 Copa Libertadores finals
+2019 Copa Libertadores final
+2020 Copa Libertadores finals
+2020 Copa Libertadores final
+2021 Copa Libertadores finals
+2021 Copa Libertadores final
+2022 Copa Libertadores finals
+2022 Copa Libertadores final
+2023 Copa Libertadores finals
+2023 Copa Libertadores final
+2024 Copa Libertadores finals
+2024 Copa Libertadores final
+2025 Copa Libertadores finals
+2025 Copa Libertadores final
+MLS Cup 1996
+MLS Cup 1997
+MLS Cup 1998
+MLS Cup 1999
+MLS Cup 2000
+MLS Cup 2001
+MLS Cup 2002
+MLS Cup 2003
+MLS Cup 2004
+MLS Cup 2005
+MLS Cup 2006
+MLS Cup 2007
+MLS Cup 2008
+MLS Cup 2009
+MLS Cup 2010
+MLS Cup 2011
+MLS Cup 2012
+MLS Cup 2013
+MLS Cup 2014
+MLS Cup 2015
+MLS Cup 2016
+MLS Cup 2017
+MLS Cup 2018
+MLS Cup 2019
+MLS Cup 2020
+MLS Cup 2021
+MLS Cup 2022
+MLS Cup 2023
+MLS Cup 2024
+MLS Cup 2025
+2013 NWSL Championship
+2014 NWSL Championship
+2015 NWSL Championship
+2016 NWSL Championship
+2017 NWSL Championship
+2018 NWSL Championship
+2019 NWSL Championship
+2020 NWSL Championship
+2021 NWSL Championship
+2022 NWSL Championship
+2023 NWSL Championship
+2024 NWSL Championship
+2025 NWSL Championship
