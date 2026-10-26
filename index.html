@@ -222,9 +222,58 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
 </div>
 
+<script>
+// ================= ANALYTICS (see the Trophy Case tracking plan) =================
+// Off until a PostHog project key goes in TC_ANALYTICS.key. The key starts with "phc_" and is
+// meant to be public. Never sends names, emails or anything typed into a form.
+// Opt out on a device: open trophycase.fyi/?notrack once (and ?track to switch back).
+const TC_ANALYTICS={key:"phc_xxkYnngfVHFZTiDqrqS2gVA3nMsu4vP5oRtyWBDPgNbn",host:"https://us.i.posthog.com",assets:"https://us-assets.i.posthog.com",domains:["trophycase.fyi","www.trophycase.fyi"]};
+const TC=(()=>{
+ const ls={get(k){try{return localStorage.getItem("tc:"+k)}catch(e){return null}},set(k,v){try{v==null?localStorage.removeItem("tc:"+k):localStorage.setItem("tc:"+k,v)}catch(e){}}};
+ let qs;try{qs=new URLSearchParams(location.search)}catch(e){qs=new URLSearchParams()}
+ if(qs.has("notrack"))ls.set("notrack","1");if(qs.has("track"))ls.set("notrack",null);
+ const on=!!TC_ANALYTICS.key&&TC_ANALYTICS.domains.includes(location.hostname)&&ls.get("notrack")!=="1"&&!(navigator.globalPrivacyControl===true);
+ if(on){
+  const ph=window.posthog=[];ph._i=[];ph.people=[];
+  ph._i.push([TC_ANALYTICS.key,{api_host:TC_ANALYTICS.host,persistence:"localStorage",person_profiles:"identified_only",autocapture:false,capture_pageview:false,capture_pageleave:false,disable_session_recording:true,disable_surveys:true,advanced_disable_flags:true,capture_dead_clicks:false,capture_heatmaps:false,capture_performance:false,rageclick:false}]);
+  const s=document.createElement("script");s.async=true;s.crossOrigin="anonymous";s.src=TC_ANALYTICS.assets+"/static/array.js";document.head.appendChild(s);
+ }
+ // send one event; before the library loads, calls wait in its queue
+ function t(name,props,beacon){if(!on)return;try{const ph=window.posthog;if(!ph)return;const opts=beacon?{transport:"sendBeacon"}:undefined;
+  if(typeof ph.capture==="function")ph.capture(name,props||{},opts);else ph.push(["capture",name,props||{},opts])}catch(e){}}
+ // ---- page open ----
+ t("$pageview",{entry:location.hash.length>1?"room":qs.get("ref")==="game"?"game":"home",ref:qs.get("ref")||undefined});
+ // ---- rooms ----
+ let room=null;const api={on,t,src:null};
+ api.roomOpened=a=>{if(room&&room.id===a.id)return;if(room)api.roomClosed();
+  room={id:a.id,t0:Date.now(),kinds:new Set()};const src=api.src||"other";api.src=null;
+  t("room_opened",{athlete_id:a.id,sport:a.sport,featured:!a.gen,source:src})};
+ api.engage=kind=>{if(!room||room.kinds.has(kind))return;room.kinds.add(kind);t("room_engaged",{athlete_id:room.id,kind})};
+ api.roomClosed=beacon=>{if(!room)return;const r=room;room=null;t("room_closed",{athlete_id:r.id,seconds:Math.round((Date.now()-r.t0)/1000),kinds_used:r.kinds.size},beacon)};
+ api.inRoom=()=>room&&room.id;
+ // ---- search: one event when typing pauses ----
+ let sq=null;api.search=(q,count)=>{clearTimeout(sq);if(!q||q.length<3)return;sq=setTimeout(()=>t("search",{query:q.slice(0,40),matches:count()}),1000)};
+ // ---- forms: any <form data-track="name"> is tracked; typed values are never sent ----
+ const forms=new WeakMap();const fs=f=>{let s=forms.get(f);if(!s){s={name:f.dataset.track,viewed:false,started:false,done:false,last:null};forms.set(f,s)}return s};
+ const live=new Set();
+ const io="IntersectionObserver" in window?new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return;const s=fs(e.target);if(!s.viewed){s.viewed=true;t("form_viewed",{form:s.name})}io.unobserve(e.target)}),{threshold:.5}):null;
+ const scan=root=>{(root.querySelectorAll?root.querySelectorAll("form[data-track]"):[]).forEach(f=>{if(live.has(f))return;live.add(f);fs(f);if(io)io.observe(f)})};
+ document.addEventListener("focusin",e=>{const f=e.target.closest&&e.target.closest("form[data-track]");if(!f)return;const s=fs(f);s.last=e.target.name||e.target.id||e.target.tagName.toLowerCase();if(!s.started){s.started=true;t("form_started",{form:s.name,first_field:s.last})}},true);
+ document.addEventListener("submit",e=>{const f=e.target.closest&&e.target.closest("form[data-track]");if(!f)return;const s=fs(f);s.done=true;t("form_submitted",{form:s.name})},true);
+ // a form that sends with fetch can report a failure: TC.formFailed(formEl, "network")
+ api.formFailed=(f,reason)=>{const s=fs(f);s.done=false;t("form_failed",{form:s.name,reason:String(reason||"error").slice(0,40)})};
+ const abandon=()=>{live.forEach(f=>{const s=fs(f);if(s.started&&!s.done){s.done=true;t("form_abandoned",{form:s.name,last_field:s.last},true)}})};
+ if(on){
+  const start=()=>{scan(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches&&n.matches("form[data-track]"))scan(n.parentNode||n);else scan(n)}}))).observe(document.body,{childList:true,subtree:true})};
+  document.readyState==="loading"?document.addEventListener("DOMContentLoaded",start):start();
+  addEventListener("pagehide",()=>{abandon();api.roomClosed(true)});
+ }
+ return api;
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -253,7 +302,7 @@ function loadNFL(){if(nflState!=="idle")return;nflState="loading";
  Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))).then(res=>{
   let ok=0;res.forEach(x=>{if(x.status==="fulfilled"){addGen(x.value);ok++}});_gn=null;
   nflState=ok?"ready":"failed";
-  if(pendingHash&&byId[pendingHash]){stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
+  if(pendingHash&&byId[pendingHash]){TC.src="link";stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
   pendingHash=null;const cur=stack.at(-1);if(cur.v!=="ath")render()})}
 
 
@@ -329,7 +378,7 @@ function poolView(host,cardEl,people){
     ctx.font="600 11px 'Barlow Condensed', sans-serif";ctx.fillStyle="#d9c9b0";ctx.fillText("CLICK TO ENTER  →",bx+8,by+fs*2.1)}})}
  function animate(){if(!raf)raf=requestAnimationFrame(step)}
  function step(){raf=0;let more=false;figs.forEach(f=>{const id=f.a.id,cur=lift.get(id)||0,tgt=focus&&focus.a===f.a?1:0;if(Math.abs(cur-tgt)>.01){lift.set(id,cur+(tgt-cur)*.25);more=true}else if(cur!==tgt){tgt?lift.set(id,1):lift.delete(id)}});
-  if(entering){entering.t=Math.min(1,entering.t+.08);more=true;if(entering.t>=1){const id=entering.a.id;entering=null;go({v:"ath",id});return}}
+  if(entering){entering.t=Math.min(1,entering.t+.08);more=true;if(entering.t>=1){const id=entering.a.id;entering=null;TC.src="field";go({v:"ath",id});return}}
   draw();if(more)animate()}
  function setFocus(f){if(focus===f)return;focus=f;showCard();animate()}
  function enter(f){if(entering)return;setFocus(f);lift.set(f.a.id,1);entering={a:f.a,t:0};animate()}
@@ -372,8 +421,8 @@ function gameView(el){
  const key=todayKey(),no=puzzleNo();let s=store.get("g2:"+key,{guesses:[],done:false,won:false});
  const clues=clueList(a);const MAX=5;
  function streak(){return store.get("streak",{n:0,last:null})}
- function finish(won){s.done=true;s.won=won;store.set("g2:"+key,s);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
- function shareText(){const marks=s.guesses.map(g=>g===a.id?"🏆":"⬛").join("");return`Trophy Case · Whose Case #${no}\n${marks} ${s.won?s.guesses.length+"/"+MAX:"X/"+MAX}`}
+ function finish(won){s.done=true;s.won=won;store.set("g2:"+key,s);setTimeout(()=>TC.t("game_finished",{puzzle_no:no,won,guesses:s.guesses.length,streak:streak().n}),0);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
+ function shareText(){const marks=s.guesses.map(g=>g===a.id?"🏆":"⬛").join("");return`Trophy Case · Whose Case #${no}\n${marks} ${s.won?s.guesses.length+"/"+MAX:"X/"+MAX}\nhttps://trophycase.fyi/?ref=game`}
  function paint(){
   const shown=s.done?MAX:Math.min(MAX,s.guesses.length+1);
   el.innerHTML=`<div class="g-head"><div><div class="eyebrow">Daily game · #${no}</div><h2 class="g-t">Whose case is it?</h2></div><div class="g-streak" title="Days in a row solved"><b>${streak().n}</b><span>Streak</span></div></div>
@@ -388,10 +437,10 @@ function gameView(el){
   if(s.done){drawFigure(x,a,{x:60,y:160,w:62,lift:0,noShadow:true})}else{const sil={...a,id:a.id,wv:[]};x.save();drawFigure(x,sil,{x:60,y:160,w:62,lift:0,noShadow:true});x.globalCompositeOperation="source-in";x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#222";x.fillRect(0,0,120,170);x.restore();x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--panel").trim()||"#fff";x.font="700 34px Cinzel, Georgia, serif";x.textAlign="center";x.textBaseline="middle";x.fillText("?",60,95)}
   const go=el.querySelector("#g-go");if(go){const inp=el.querySelector("#g-in"),msg=el.querySelector("#g-msg");
    const submit=()=>{const v=inp.value.trim().toLowerCase();if(!v)return;const p=(v===a.name.toLowerCase()?a:null)||ALL.filter(q=>q.name.toLowerCase()===v).sort(byTrophies)[0]||ALL.filter(q=>q.name.toLowerCase().includes(v)&&v.length>3).sort(byTrophies)[0];
-    if(!p){msg.textContent="That name isn't in the field yet. Pick one from the list.";return}if(s.guesses.includes(p.id)){msg.textContent="Already guessed.";return}
+    if(!p){msg.textContent="That name isn't in the field yet. Pick one from the list.";return}if(s.guesses.includes(p.id)){msg.textContent="Already guessed.";return}if(!s.guesses.length)TC.t("game_started",{puzzle_no:no});
     s.guesses.push(p.id);if(p.id===a.id)finish(true);else if(s.guesses.length>=MAX)finish(false);else store.set("g2:"+key,s);paint();if(!s.done)el.querySelector("#g-in")?.focus()};
    go.onclick=submit;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit()}})}
-  const sh=el.querySelector("#g-share");if(sh)sh.onclick=()=>{const t=shareText();const fail=()=>{sh.insertAdjacentHTML("afterend",`<textarea class="g-copy" readonly rows="2">${esc(t)}</textarea>`);const ta=el.querySelector(".g-copy");ta.focus();ta.select();sh.remove()};try{navigator.clipboard.writeText(t).then(()=>{sh.textContent="Copied"},fail)}catch(e){fail()}};
+  const sh=el.querySelector("#g-share");if(sh)sh.onclick=()=>{const t=shareText();TC.t("game_shared",{puzzle_no:no,won:s.won,guesses:s.guesses.length});const fail=()=>{sh.insertAdjacentHTML("afterend",`<textarea class="g-copy" readonly rows="2">${esc(t)}</textarea>`);const ta=el.querySelector(".g-copy");ta.focus();ta.select();sh.remove()};try{navigator.clipboard.writeText(t).then(()=>{sh.textContent="Copied"},fail)}catch(e){fail()}};
  }
  paint();
 }
@@ -404,7 +453,7 @@ let groupBy="college",sportFilter=null,sel=null,query="";
 function go(s){stack.push(s);render();window.scrollTo({top:0})}
 function back(i){stack=stack.slice(0,i+1);render()}
 document.getElementById("home").onclick=()=>{stack=[{v:"explore"}];render()};
-document.getElementById("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();if(stack.at(-1).v!=="explore"){stack=[{v:"explore"}]}render()});
+document.getElementById("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();{const q=query;TC.search(q,()=>ALL.filter(a=>hay(a).includes(q)).length)}if(stack.at(-1).v!=="explore"){stack=[{v:"explore"}]}render()});
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const DIMS={college:{label:"Colleges",get:a=>a.colleges||(a.college==="—"?[]:[a.college])},team:{label:"Teams",get:a=>a.teams},region:{label:"Birthplaces",get:a=>a.region?[a.region]:[]},sport:{label:"Sports",get:a=>[a.sport]}};
@@ -419,8 +468,8 @@ function render(){
 }
 document.addEventListener("click",e=>{
  const b=e.target.closest("[data-back]");if(b)return back(+b.dataset.back);
- const h=e.target.closest("[data-hub]");if(h)return go({v:"hub",dim:h.dataset.hub,name:h.dataset.name});
- const a=e.target.closest("[data-ath]");if(a)return go({v:"ath",id:a.dataset.ath});
+ const h=e.target.closest("[data-hub]");if(h){TC.t("hub_opened",{dimension:h.dataset.hub,name:h.dataset.name});return go({v:"hub",dim:h.dataset.hub,name:h.dataset.name})}
+ const a=e.target.closest("[data-ath]");if(a){TC.src=a.closest("#game")?"game":a.closest("#who")?"field":query?"search":stack.at(-1).v==="hub"?"hub":stack.at(-1).v==="ath"?"room":"list";return go({v:"ath",id:a.dataset.ath})}
 });
 
 const POS_NAME={QB:"Quarterback",RB:"Running back",WR:"Wide receiver",TE:"Tight end",OL:"Offensive line",DL:"Defensive line",LB:"Linebacker",DB:"Defensive back",K:"Kicker",P:"Punter",LS:"Long snapper",SPEC:"Special teams",FB:"Fullback",T:"Tackle",G:"Guard",C:"Center",DE:"Defensive end",DT:"Defensive tackle",CB:"Cornerback",S:"Safety"};
@@ -479,8 +528,8 @@ function explore(){
  view.querySelectorAll("[data-dim]").forEach(b=>b.onclick=()=>{groupBy=b.dataset.dim;explore()});
  view.querySelectorAll("[data-sport]").forEach(b=>b.onclick=()=>{sportFilter=b.dataset.sport==="All"?null:b.dataset.sport;floorN=FLOOR_STEP;explore()});
  view.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{whoFilter=b.dataset.who;reset();explore()});
- view.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{stateFilter=b.dataset.state;reset();explore();window.scrollTo({top:0})});
- document.getElementById("statepick").onchange=e=>{stateFilter=e.target.value;reset();explore()};
+ view.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{stateFilter=b.dataset.state;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"map"});reset();explore();window.scrollTo({top:0})});
+ document.getElementById("statepick").onchange=e=>{stateFilter=e.target.value;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"picker"});reset();explore()};
  wireMore(document.getElementById("floor"),list);
  const crowd=list.slice(0,POOL_CAP);
  if(crowd.length)poolCleanup=poolView(document.getElementById("pool"),document.getElementById("who"),crowd);else document.getElementById("pool").innerHTML=`<p class="note" style="padding:24px;color:#fff">No one matches that yet.</p>`;
@@ -524,7 +573,7 @@ function drawMap(el,people,focus){
   const busy=people.length>24;
   const lab=agg?(labelSet.has(t.name)?`${t.name} (${t.ppl.length.toLocaleString()})`:""):busy?(t.ppl.length>1&&labelSet.has(t.name)?`${t.name.split(",")[0]} (${t.ppl.length})`:""):(t.ppl.length>1?`${t.name.split(",")[0]} (${t.ppl.length})`:t.ppl[0].name);
   p.append("title").text(agg?`${t.name}: ${t.ppl.length.toLocaleString()} players`:t.ppl.length>1?`${t.name}: ${t.ppl.slice(0,30).map(a=>a.name).join(", ")}${t.ppl.length>30?"…":""}`:`${t.ppl[0].name}, ${t.name}`);
-  const open=()=>agg?go({v:"hub",dim:"region",name:t.name}):t.ppl.length===1?go({v:"ath",id:t.ppl[0].id}):go({v:"hub",dim:"born",name:t.name});
+  const open=()=>agg?go({v:"hub",dim:"region",name:t.name}):t.ppl.length===1?(TC.src="map",go({v:"ath",id:t.ppl[0].id})):go({v:"hub",dim:"born",name:t.name});
   p.on("click",open).on("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}});
   if(!lab){p.append("circle").attr("class","dot").attr("cx",x).attr("cy",y).attr("r",r).attr("fill-opacity",agg?.75:1);return}
   const w=lab.length*5.6,h=13;let lx=x+r+4,ly=y+4;
@@ -788,13 +837,13 @@ function buildRoom2(a){
 }
 
 // ----- open / close -----
-function closeRoom(){if(!RS)return;cancelAnimationFrame(RS.raf);RS.off.forEach(f=>f());RS.el.remove();
+function closeRoom(){const c=stack.at(-1);if(TC.inRoom()&&!(c&&c.v==="ath"&&c.id===TC.inRoom()))TC.roomClosed();if(!RS)return;cancelAnimationFrame(RS.raf);RS.off.forEach(f=>f());RS.el.remove();
  if(RS.scene)RS.scene.traverse(o=>{if(o.isMesh){o.geometry.dispose();const m=o.material;(Array.isArray(m)?m:[m]).forEach(mm=>{if(mm.map)mm.map.dispose();mm.dispose()})}});RS=null;document.body.style.overflow=""}
 
 const VIEWS=[{k:"stories",yaw:Math.PI/2,p:-.04,pos:[.55,1.6,.3],label:"Big moments"},{k:"wall",yaw:0,p:-.03,pos:[0,1.6,1.05],label:"Trophy wall"},{k:"clips",yaw:-Math.PI/2,p:-.17,pos:[-.05,1.6,.3],label:"Clippings"}];
 async function openRoom(a){
  if(a.gen&&!a._d){await roomDetails(a);const c=stack.at(-1);if(c.v!=="ath"||c.id!==a.id)return}
- closeRoom();
+ closeRoom();TC.roomOpened(a);
  const el=document.createElement("div");el.className="room";el.innerHTML=`
   <div class="r-stage"></div>
   <div class="r-top"><button class="r-btn" id="r-leave">← Leave room</button><div class="r-id"><div class="r-name">${esc(a.name)}</div><div class="r-facts">${a.born?`Born ${hubLink("born",a.born)} · `:""}${a.college==="—"?"No college":(a.colleges||[a.college]).map(c=>hubLink("college",c)).join(" / ")} · ${a.teams.map(t=>hubLink("team",t)).join(", ")}</div></div>
@@ -822,24 +871,24 @@ async function openRoom(a){
  el.querySelector("#r-load").remove();setTimeout(()=>el.querySelector('#r-hint')?.classList.add('gone'),5500);
  const plaqueEl=el.querySelector("#r-plaque"),listEl=el.querySelector("#r-list"),storyEl=el.querySelector("#r-story"),where=el.querySelector("#r-where"),pagesEl=el.querySelector("#r-pages"),pn=el.querySelector("#r-pn");
  el.querySelector("#r-leave").onclick=()=>back(stack.length-2);
- const lt=el.querySelector("#r-list-t");lt.onclick=()=>{listEl.hidden=!listEl.hidden;lt.setAttribute("aria-expanded",String(!listEl.hidden))};
+ const lt=el.querySelector("#r-list-t");lt.onclick=()=>{TC.engage("list");listEl.hidden=!listEl.hidden;lt.setAttribute("aria-expanded",String(!listEl.hidden))};
  const setGlow=()=>{B.items.forEach(it=>{const g=it===hover||it===sel;it.meshes.forEach(m=>m.traverse(o=>{if(o.isMesh&&o.material.metalness>.9)o.material.emissive.setHex(g?0x4a3510:0)}))});
   B.frames.forEach((f,i)=>f.children[0].material.emissive.setHex(hover==="s"+i?0x3a2a08:0))};
- function turn(to){if(anim&&anim.kind==="enter")return;to=Math.max(0,Math.min(2,to));if(to===view)return;const y0=yaw+panY;view=to;panY=0;anim={kind:"turn",t0:performance.now(),y0,y1:VIEWS[to].yaw,p0:pitch+panP,from:pos.clone()};panP=0;
+ function turn(to){if(anim&&anim.kind==="enter")return;to=Math.max(0,Math.min(2,to));if(to===view)return;TC.engage("turn");const y0=yaw+panY;view=to;panY=0;anim={kind:"turn",t0:performance.now(),y0,y1:VIEWS[to].yaw,p0:pitch+panP,from:pos.clone()};panP=0;
   where.textContent=VIEWS[to].label;el.querySelector('[data-turn="-1"]').disabled=to===0;el.querySelector('[data-turn="1"]').disabled=to===2;
   el.querySelector('[data-turn="-1"] span').textContent=to===2?"Trophy wall":"Big moments";el.querySelector('[data-turn="1"] span').textContent=to===0?"Trophy wall":"Clippings";
   pagesEl.hidden=to!==2;plaqueEl.hidden=true;sel=null;setGlow();req()}
  el.querySelectorAll("[data-turn]").forEach(b=>b.onclick=()=>turn(view+ +b.dataset.turn));
  el.querySelector('[data-turn="-1"]').disabled=false;
- function selectTrophy(it){sel=it;const w=it.aw;if(view!==1)turn(1);plaqueEl.hidden=false;plaqueEl.innerHTML=`<div class="r-cat">${esc(w.c)}</div><div class="r-pt">${esc(w.n)}${w.x?` <span>×${w.x}</span>`:""}</div><div class="r-py">${esc(w.y)}</div><button class="r-x" aria-label="Close plaque">×</button>`;plaqueEl.querySelector(".r-x").onclick=()=>{plaqueEl.hidden=true;sel=null;setGlow();req()};setGlow();req()}
- function openClip(i){const c=B.book.clips[i];if(!c)return;storyEl.hidden=false;storyEl.innerHTML=`<div class="r-card r-news" role="dialog" aria-label="${esc(c.h)}"><div class="r-mast">The Case Archive</div><div class="r-ed">ARCHIVE EDITION · ${c.y||""}</div><h2>${esc(c.h)}</h2><p>${esc(c.b)}</p><div class="r-sn"><button class="r-btn" data-c="${i-1}" ${i<=0?"disabled":""}>← Earlier</button><button class="r-btn" data-c="${i+1}" ${i>=B.book.clips.length-1?"disabled":""}>Later →</button></div><p class="r-fine">Prototype clipping, summary written for the demo.</p><button class="r-x" aria-label="Close clipping">×</button></div>`;
+ function selectTrophy(it){sel=it;TC.engage("trophy");const w=it.aw;if(view!==1)turn(1);plaqueEl.hidden=false;plaqueEl.innerHTML=`<div class="r-cat">${esc(w.c)}</div><div class="r-pt">${esc(w.n)}${w.x?` <span>×${w.x}</span>`:""}</div><div class="r-py">${esc(w.y)}</div><button class="r-x" aria-label="Close plaque">×</button>`;plaqueEl.querySelector(".r-x").onclick=()=>{plaqueEl.hidden=true;sel=null;setGlow();req()};setGlow();req()}
+ function openClip(i){const c=B.book.clips[i];if(!c)return;TC.engage("clipping");storyEl.hidden=false;storyEl.innerHTML=`<div class="r-card r-news" role="dialog" aria-label="${esc(c.h)}"><div class="r-mast">The Case Archive</div><div class="r-ed">ARCHIVE EDITION · ${c.y||""}</div><h2>${esc(c.h)}</h2><p>${esc(c.b)}</p><div class="r-sn"><button class="r-btn" data-c="${i-1}" ${i<=0?"disabled":""}>← Earlier</button><button class="r-btn" data-c="${i+1}" ${i>=B.book.clips.length-1?"disabled":""}>Later →</button></div><p class="r-fine">Prototype clipping, summary written for the demo.</p><button class="r-x" aria-label="Close clipping">×</button></div>`;
   storyEl.querySelector(".r-x").onclick=()=>{storyEl.hidden=true};storyEl.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>openClip(+b.dataset.c))}
- function openStory(i){const s=B.stories[i];storyEl.hidden=false;storyEl.innerHTML=`<div class="r-card" role="dialog" aria-label="${esc(s[1])}"><div class="r-sy">${esc(s[0])}</div><h2>${esc(s[1])}</h2><p>${esc(s[2])}</p><div class="r-sn">${B.stories.map((_,j)=>`<button class="r-dot ${j===i?"on":""}" data-s="${j}" aria-label="Story ${j+1}"></button>`).join("")}</div><button class="r-x" aria-label="Close story">×</button></div>`;
+ function openStory(i){const s=B.stories[i];TC.engage("story");storyEl.hidden=false;storyEl.innerHTML=`<div class="r-card" role="dialog" aria-label="${esc(s[1])}"><div class="r-sy">${esc(s[0])}</div><h2>${esc(s[1])}</h2><p>${esc(s[2])}</p><div class="r-sn">${B.stories.map((_,j)=>`<button class="r-dot ${j===i?"on":""}" data-s="${j}" aria-label="Story ${j+1}"></button>`).join("")}</div><button class="r-x" aria-label="Close story">×</button></div>`;
   storyEl.querySelector(".r-x").onclick=()=>{storyEl.hidden=true};storyEl.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>openStory(+b.dataset.s))}
  on(storyEl,"click",e=>{if(e.target===storyEl)storyEl.hidden=true});
  // scrapbook
  const bk=B.book;const pageLabel=()=>{pn.textContent=`Pages ${Math.min(bk.i+1,bk.clips.length)}–${Math.min(bk.i+2,bk.clips.length)} of ${bk.clips.length}`;el.querySelector("#r-prev").disabled=bk.i<=0;el.querySelector("#r-next").disabled=bk.i+2>=bk.clips.length};pageLabel();
- function flip(dir){if(anim&&anim.kind==="flip")return;const i=bk.i;if(dir>0&&i+2>=bk.clips.length)return;if(dir<0&&i<=0)return;
+ function flip(dir){if(anim&&anim.kind==="flip")return;const i=bk.i;if(dir>0&&i+2>=bk.clips.length)return;if(dir<0&&i<=0)return;TC.engage("page");
   if(dir>0){bk.FF.material.map=bk.getTex(i+1);bk.FB.material.map=bk.getTex(i+2);bk.R.material.map=bk.getTex(i+3)}else{bk.FF.material.map=bk.getTex(i-1);bk.FB.material.map=bk.getTex(i);bk.L.material.map=bk.getTex(i-2)}
   [bk.FF,bk.FB,bk.L,bk.R].forEach(m=>m.material.needsUpdate=true);bk.flipP.visible=true;bk.flipP.rotation.y=dir>0?0:-Math.PI;anim={kind:"flip",dir,t0:performance.now()};req()}
  el.querySelector("#r-prev").onclick=()=>flip(-1);el.querySelector("#r-next").onclick=()=>flip(1);
@@ -870,7 +919,7 @@ async function openRoom(a){
  turn(1);req();
 }
 
-try{const h=(location.hash||"").slice(1);if(h&&byId[h])stack=[{v:"explore"},{v:"ath",id:h}];else if(h)pendingHash=h}catch(e){}
+try{const h=(location.hash||"").slice(1);if(h&&byId[h]){TC.src="link";stack=[{v:"explore"},{v:"ath",id:h}]}else if(h)pendingHash=h}catch(e){}
 const _render=render;render=function(){_render();try{const cur=stack.at(-1);const want=cur.v==="ath"?"#"+cur.id:"";if((location.hash||"")!==want)if(pendingHash&&!want)return;history.replaceState(null,"",want||location.pathname+location.search)}catch(e){}};
 render();loadNFL();
 </script>
