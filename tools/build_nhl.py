@@ -47,6 +47,11 @@ for k, b in bio.items():
 for x in IB.values():
     if x.get("page") and x.get("id"): TITLE2KEY.setdefault(canon_title(x["page"]), x["id"])
 LINK = re.compile(r"\[\[([^\]|#]+)(?:#[^\]|]*)?(?:\|[^\]]*)?\]\]")
+def key_of(title):
+    """Wikipedia title -> player; also tries the title without its "(ice hockey)"-style suffix (old links that now redirect)."""
+    k = TITLE2KEY.get(canon_title(title))
+    if not k and "(" in title: k = TITLE2KEY.get(canon_title(re.sub(r"\s*\(.*\)\s*$", "", title)))
+    return k
 SORTNAME = re.compile(r"\{\{\s*sortname\s*\|([^|}]*)\|([^|}]*)((?:\|[^}]*)?)\}\}", re.I)
 def people_in(text):
     out = []
@@ -65,7 +70,7 @@ def people_in(text):
             continue
         lm = LINK.match(tok)
         if lm:
-            k = TITLE2KEY.get(canon_title(lm.group(1)))
+            k = key_of(lm.group(1))
             if k: out.append(k)
     seen = set()
     return [k for k in out if not (k in seen or seen.add(k))]
@@ -116,6 +121,7 @@ for page, name in (("Hart Memorial Trophy", "Hart Trophy (NHL MVP)"), ("Vezina T
     counts[name] = table_award(page, (name, "statue" if shelf == I else "plaque", shelf))
 counts["All-Star Team"] = table_award("NHL All-Star Team", None, per_column=[("NHL First All-Star Team", "statue", I), ("NHL Second All-Star Team", "star", Sel)])
 counts["All-Rookie"] = table_award("NHL All-Rookie Team", ("NHL All-Rookie Team", "star", Sel))
+counts["PWHL Playoff MVP"] = table_award("Walter Cup", ("PWHL Playoff MVP", "statue", I), min_year=2024)   # the only people linked in that table are the MVPs
 
 # Hall of Fame: members list (year rows), infobox hall_of_fame field, Wikidata
 HOF = {}
@@ -152,7 +158,10 @@ print(f"Stanley Cup rosters: {sum(len(v) for v in CUP.values())} Cup wins for {l
 # Olympic ice hockey medals (players who also have an Olympics-wing room get them here instead)
 OLY = defaultdict(list)
 for who, color, year, event, games in olympic_lists.medals(PAGES.get("List of Olympic medalists in ice hockey", "")):
-    k = TITLE2KEY.get(canon_title(who)) if not who.startswith("name:") else None
+    if who.startswith("name:"):
+        c_ = NAME2KEYS.get(norm(who[5:]), []); k = c_[0] if len(c_) == 1 else None
+    else:
+        k = key_of(who)
     if k: OLY[k].append((color, year))
 
 # Wikidata backup
@@ -240,7 +249,15 @@ for k, b in bio.items():
     for (n, kd, c), ys in AW.get(k, {}).items():
         ys = {y for y in ys if (y0 - 1 <= y <= y1 + 1) or n == "Hobey Baker Award"}
         if ys: add(n, kd, c, ys)
-    for color, yy in OLY.get(k, []): add(f"Olympic {color} medal", "medal", "International", [yy])
+    oly = set(OLY.get(k, []))
+    comp = ""
+    for m_ in re.finditer(r"\{\{\s*Medal(Olympic|Competition|Gold|Silver|Bronze)\s*(?:\|((?:[^{}]|\{\{[^{}]*\}\})*))?\}\}", f.get("medal_templates", ""), re.I):
+        kind_ = m_.group(1).lower()
+        if kind_ in ("olympic", "competition"): comp = "Olympic Games" if kind_ == "olympic" else plain(m_.group(2) or ""); continue
+        if re.search(r"Olympic", comp) and not re.search(r"Youth", comp):
+            yy = years_in(plain((m_.group(2) or "").split("|")[0]))
+            if yy: oly.add((kind_, yy[0]))
+    for color, yy in oly: add(f"Olympic {color} medal", "medal", "International", [yy])
     if hof_y is not None or "Hockey Hall of Fame inductees" in x.get("cats", []):
         add("Hockey Hall of Fame", "plaque", H, [hof_y] if hof_y else [])
     if "IIHF Hall of Fame inductees" in x.get("cats", []): add("IIHF Hall of Fame", "plaque", H, [])
@@ -256,7 +273,10 @@ for k, b in bio.items():
     dteam = re.sub(r"\s*\(.*?\)\s*$", "", plain(f.get("draft_team", "")))
     dpick = re.findall(r"(\d+)\w*\s+overall", plain(f.get("draft", "")))
     draft = (dy[0], int(dpick[0]) if dpick else None, dteam) if dy and dteam and not re.search(r"undrafted", plain(f.get("draft", "")), re.I) else None
-    pre.append(dict(k=k, name=name, teams=teams, team_years=team_years, y0=y0, y1=y1, active=active, hof=hof, awards=awards, aw_years=aw_years,
+    sex = (b.get("sexL") or "").lower()
+    poss = "her" if sex in ("female", "cisgender woman", "trans woman") or f.get("sex", "").strip().lower() == "f" else "his"
+    league = "PWHL" if b.get("league") == "PWHL" else "NHL"
+    pre.append(dict(k=k, name=name, poss=poss, league=league, teams=teams, team_years=team_years, y0=y0, y1=y1, active=active, hof=hof, awards=awards, aw_years=aw_years,
                     draft=draft, pos=position(f.get("position", "")), place=place(b),
                     wp=f"https://en.wikipedia.org/wiki/{urllib.parse.quote(t.replace(' ', '_'))}"))
 
@@ -269,9 +289,10 @@ def make_story(r):
     c = []
     if r["draft"]:
         dy, pk, dt = r["draft"]
-        c.append((dy, f"Drafted by {the(dt)}", f"The {dt} took {name}{f' with the {ordinal(pk)} overall pick' if pk else ''} in the {dy} NHL draft.", 3))
+        c.append((dy, f"Drafted by {the(dt)}", f"The {dt} took {name}{f' with the {ordinal(pk)} overall pick' if pk else ''} in the {dy} {r['league']} draft.", 3))
     elif teams:
-        c.append((r["y0"], f"Turns pro", f"{name} began his pro career in {r['y0']}{' with ' + the(teams[0]) if teams else ''}.", 1))
+        t0 = teams[0] if teams and r["y0"] in ty.get(teams[0], []) else ""
+        c.append((r["y0"], "Career begins", f"{name}'s playing career began in {r['y0']}{' with ' + the(t0) if t0 else ''}.", 1))
     if "Stanley Cup" in aw and aw["Stanley Cup"][0]:
         ys, n = aw["Stanley Cup"]; tm = team_at(ys[0])
         c.append((ys[0], "Lifts the Stanley Cup", f"{name}{' and ' + the(tm) if tm else ''} won the Stanley Cup in {ys[0]}." + (f" It was the first of {n}." if n > 1 else ""), 8))
@@ -282,6 +303,7 @@ def make_story(r):
                               ("Art Ross Trophy", "Scoring title", "{name} led the NHL in points to win the Art Ross Trophy for {y}.", 6),
                               ("Calder Trophy (Rookie of the Year)", "Rookie of the Year", "{name} won the Calder Trophy as the NHL's top rookie for {y}.", 5),
                               ("Olympic gold medal", "Olympic gold", "{name} won Olympic gold in {y}.", 6),
+                              ("PWHL Playoff MVP", "Playoff MVP", "{name} was named MVP of the {y} PWHL playoffs.", 8),
                               ("NHL First All-Star Team", "First All-Star Team", "{name} was named to the NHL's First All-Star Team for {y}.", 3)):
         if n_ in aw and aw[n_][0]:
             ys, n = aw[n_]
@@ -294,12 +316,13 @@ def make_story(r):
     top = sorted(c, key=lambda z: -z[3])[:3]; top.sort(key=lambda z: z[0])
     return [[str(z[0]) if z[0] != 9999 else "Toronto", z[1], z[2]] for z in top]
 
-LINE_ORDER = ["Hockey Hall of Fame", "Stanley Cup", "Hart Trophy (NHL MVP)", "Conn Smythe Trophy", "Vezina Trophy", "Norris Trophy", "Art Ross Trophy",
+LINE_ORDER = ["Hockey Hall of Fame", "Stanley Cup", "PWHL Playoff MVP", "Hart Trophy (NHL MVP)", "Conn Smythe Trophy", "Vezina Trophy", "Norris Trophy", "Art Ross Trophy",
               "Olympic gold medal", "Calder Trophy (Rookie of the Year)", "NHL First All-Star Team"]
 LBL = {"Hockey Hall of Fame": "Hall of Famer", "Stanley Cup": "Stanley Cup champion", "Hart Trophy (NHL MVP)": "Hart Trophy winner",
        "Olympic gold medal": "Olympic gold medalist", "Calder Trophy (Rookie of the Year)": "Calder Trophy winner"}
 def make_line(r, era):
     who = POS_FULL.get(r["pos"], "Player"); tm = r["teams"]
+    if r["league"] == "PWHL" and who == "Defenceman": who = "Defender"
     tl = " and ".join(tm) if len(tm) <= 2 else f"{tm[0]}, {tm[1]} and {len(tm) - 2} other team{'s' if len(tm) > 3 else ''}"
     aw = {w["n"]: w for w in r["awards"]}; hl = []
     for n in LINE_ORDER:
