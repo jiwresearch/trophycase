@@ -222,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Basketball from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
 </div>
 
 <script>
@@ -290,7 +290,7 @@ const byId=Object.fromEntries(A.map(a=>[a.id,a]));
 const hay=a=>a._h||(a._h=[a.name,a.pos||"",a.college,a.born,a.region,...a.teams].join(" ").toLowerCase());
 const isWV=a=>a.cur||(a.wv&&a.wv.length>0);
 let NFL_N=0,nflState="idle",pendingHash=null;
-const GEN_FILES=["data/nfl.json","data/mlb.json"];
+const GEN_FILES=["data/nfl.json","data/mlb.json","data/hoops.json"];
 function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=d.rooms||"rooms";
   d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const src=d.srcfmt&&r[14]?d.srcfmt.replace("{0}",r[14][0]).replace("{id}",r[14]):r[14];
    const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport,born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
@@ -476,8 +476,10 @@ const POS_NAME={QB:"Quarterback",RB:"Running back",WR:"Wide receiver",TE:"Tight 
 const LINE_ORDER=["Pro Football Hall of Fame","Super Bowl Champion","NFL MVP","AFL MVP","Super Bowl MVP","NFL Championship","AFL Championship","NFL Defensive Player of the Year","NFL Offensive Player of the Year","First-team All-Pro","Pro Bowl"];
 const POS_BB={P:"Pitcher",C:"Catcher","1B":"First baseman","2B":"Second baseman","3B":"Third baseman",SS:"Shortstop",LF:"Left fielder",CF:"Center fielder",RF:"Right fielder",OF:"Outfielder",DH:"Designated hitter"},
 LINE_ORDER_BB=["National Baseball Hall of Fame","World Series Champion","Negro League World Series Champion","MVP","Cy Young Award","Triple Crown","World Series MVP","Rookie of the Year","Gold Glove","Silver Slugger","All-Star","Negro Leagues All-Star"];
-function makeLine(a){const bb=a.sport==="Baseball";const who=(bb?POS_BB:POS_NAME)[a.pos]||a.pos||"Player";const t=a.teams;const tl=t.length<=2?t.join(" and "):`${t[0]}, ${t[1]} and ${t.length-2} other team${t.length>3?"s":""}`;
- const aw=Object.fromEntries(a.awards.map(w=>[w.n,w]));const hl=[];for(const n of (bb?LINE_ORDER_BB:LINE_ORDER)){if(aw[n]){const x=aw[n].x||1;const l={"Pro Football Hall of Fame":"Hall of Famer","Super Bowl Champion":"Super Bowl champion","National Baseball Hall of Fame":"Hall of Famer","World Series Champion":"World Series champion","Negro League World Series Champion":"Negro League World Series champion"}[n]||n;hl.push(x>1?`${x}× ${l}`:l)}if(hl.length===3)break}
+const POS_BK={PG:"Point guard",SG:"Shooting guard",SF:"Small forward",PF:"Power forward",C:"Center",G:"Guard",F:"Forward"},
+LINE_ORDER_BK=["Naismith Memorial Basketball Hall of Fame","Women's Basketball Hall of Fame","NBA Champion","WNBA Champion","ABA Champion","NBA MVP","WNBA MVP","ABA MVP","NBA Finals MVP","WNBA Finals MVP","Olympic gold medal","NBA Defensive Player of the Year","All-NBA First Team","All-WNBA First Team","NBA All-Star","WNBA All-Star","ABA All-Star","NCAA Champion"];
+function makeLine(a){const bb=a.sport==="Baseball",bk=a.sport==="Basketball"&&a.gen;const who=(bb?POS_BB:bk?POS_BK:POS_NAME)[a.pos]||a.pos||"Player";const t=a.teams;const tl=t.length<=2?t.join(" and "):`${t[0]}, ${t[1]} and ${t.length-2} other team${t.length>3?"s":""}`;
+ const aw=Object.fromEntries(a.awards.map(w=>[w.n,w]));const hl=[];for(const n of (bb?LINE_ORDER_BB:bk?LINE_ORDER_BK:LINE_ORDER)){if(aw[n]){const x=aw[n].x||1;const l={"Pro Football Hall of Fame":"Hall of Famer","Super Bowl Champion":"Super Bowl champion","National Baseball Hall of Fame":"Hall of Famer","World Series Champion":"World Series champion","Negro League World Series Champion":"Negro League World Series champion","Naismith Memorial Basketball Hall of Fame":"Hall of Famer","Women's Basketball Hall of Fame":"Women's Hall of Famer","NBA Champion":"NBA champion","WNBA Champion":"WNBA champion","ABA Champion":"ABA champion","Olympic gold medal":"Olympic gold medalist","NCAA Champion":"NCAA champion"}[n]||n;hl.push(x>1?`${x}× ${l}`:l)}if(hl.length===3)break}
  return `${who} for the ${tl}, ${String(a.era).replace("–present"," to now")}.`+(hl.length?" "+hl.join(", ")+".":"")}
 
 function cardHTML(a){const meta=a.gen?[a.pos,a.teams.at(-1),a.era].filter(Boolean).join(" · "):`${a.sport} · ${a.teams[0]||a.college}`;

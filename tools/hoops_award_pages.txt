@@ -1,0 +1,64 @@
+# Wikipedia award-list pages for the basketball build (redirects are followed; missing pages are reported)
+# --- NBA
+NBA Most Valuable Player Award
+Bill Russell NBA Finals Most Valuable Player Award
+NBA Rookie of the Year Award
+NBA Defensive Player of the Year Award
+NBA Sixth Man of the Year Award
+NBA Most Improved Player Award
+NBA Clutch Player of the Year Award
+NBA Conference Finals Most Valuable Player Award
+NBA All-Star Game Most Valuable Player Award
+NBA Cup Most Valuable Player Award
+J. Walter Kennedy Citizenship Award
+Twyman–Stokes Teammate of the Year Award
+NBA Sportsmanship Award
+All-NBA Team
+NBA All-Defensive Team
+NBA All-Rookie Team
+List of NBA All-Stars
+List of NBA champions
+NBA 75th Anniversary Team
+NBA 50th Anniversary Team
+List of NBA single-season scoring leaders
+# --- ABA
+ABA Most Valuable Player Award
+ABA Rookie of the Year Award
+ABA Playoffs Most Valuable Player Award
+All-ABA Team
+ABA All-Time Team
+List of American Basketball Association champions
+# --- WNBA
+WNBA Most Valuable Player Award
+WNBA Finals Most Valuable Player Award
+WNBA Rookie of the Year Award
+WNBA Defensive Player of the Year Award
+WNBA Sixth Player of the Year Award
+WNBA Most Improved Player Award
+All-WNBA Team
+WNBA All-Defensive Team
+WNBA All-Rookie Team
+List of WNBA All-Stars
+List of WNBA champions
+WNBA All-Star Game Most Valuable Player Award
+The W25
+# --- Halls of Fame
+List of members of the Naismith Memorial Basketball Hall of Fame
+List of players in the Naismith Memorial Basketball Hall of Fame
+Women's Basketball Hall of Fame
+FIBA Hall of Fame
+# --- College (men's and women's)
+Naismith College Player of the Year
+John R. Wooden Award
+AP College Basketball Player of the Year
+Oscar Robertson Trophy
+NCAA Basketball Tournament Most Outstanding Player
+NCAA Division I women's basketball tournament Most Outstanding Player
+List of NCAA Men's Division I Basketball Champions
+List of NCAA Division I women's basketball tournament Final Fours
+Wade Trophy
+Honda Sports Award
+# --- Olympics
+List of Olympic medalists in basketball
+United States men's national basketball team
+United States women's national basketball team
