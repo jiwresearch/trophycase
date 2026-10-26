@@ -477,3 +477,7 @@ with_aw = sum(1 for r in out if r["awards"]); print(f"Players with at least one 
 print("Award counts:", Counter(w["n"] for r in out for w in r["awards"]).most_common(40))
 print("Not shown (weekly/monthly/fan awards):", sum(skipped_aw.values()), "rows")
 print(f"Skipped {len(skipped_curated)} already curated:", skipped_curated)
+
+# Site policy: no Russia-born athletes, no Russian awards (see tools/exclude_russia.py).
+import subprocess as _sp, sys as _sys
+_sp.run([_sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "exclude_russia.py")], check=True)

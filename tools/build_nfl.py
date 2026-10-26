@@ -625,3 +625,7 @@ for an, (n_, agree) in sorted(LIST_STATS.items(), key=lambda kv: -kv[1][0]):
     print(f"  {an:42s} {n_:5d} | {agree:5d} ({100*agree/max(n_,1):.0f}%)")
 with_aw = sum(1 for r in out if r["awards"]); print(f"\nPlayers with at least one trophy: {with_aw} of {len(out)} ({100*with_aw/len(out):.0f}%)")
 print(f"Skipped {len(skipped_curated)} already curated:", skipped_curated[:40])
+
+# Site policy: no Russia-born athletes, no Russian awards (see tools/exclude_russia.py).
+import subprocess as _sp, sys as _sys
+_sp.run([_sys.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), "exclude_russia.py")], check=True)
