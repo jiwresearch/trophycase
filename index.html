@@ -222,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Basketball from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Basketball and Olympic medals from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
 </div>
 
 <script>
@@ -290,12 +290,12 @@ const byId=Object.fromEntries(A.map(a=>[a.id,a]));
 const hay=a=>a._h||(a._h=[a.name,a.pos||"",a.college,a.born,a.region,...a.teams].join(" ").toLowerCase());
 const isWV=a=>a.cur||(a.wv&&a.wv.length>0);
 let NFL_N=0,nflState="idle",pendingHash=null;
-const GEN_FILES=["data/nfl.json","data/mlb.json","data/hoops.json"];
+const GEN_FILES=["data/nfl.json","data/mlb.json","data/hoops.json","data/olympics.json"];
 function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=d.rooms||"rooms";
   d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const src=d.srcfmt&&r[14]?d.srcfmt.replace("{0}",r[14][0]).replace("{id}",r[14]):r[14];
-   const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport,born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
+   const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport:d.sports&&r[16]!=null?d.sports[r[16]]:sport,born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
    awards:r[12].map(w=>{const t=d.awards[w[0]];const o={n:t[0],k:t[1],c:t[2],y:w[1]};if(w[2])o.x=w[2];return o}),wv:r[13],src,gen:true,rd,stories:[]};
-   a.line=makeLine(a);
+   a.line=r[15]||makeLine(a);
    byId[a.id]=a;ALL.push(a)});
   NFL_N+=d.rows.length}
 function loadNFL(){if(nflState!=="idle")return;nflState="loading";
@@ -504,7 +504,9 @@ function explore(){
  const match=a=>base(a)&&(query?hay(a).includes(query):inWho(a,whoFilter));
  const list=ALL.filter(match).sort(byTrophies);
  const scopeSet=ALL.filter(a=>base(a)&&inWho(a,whoFilter));
- const sports=[...new Set(ALL.filter(a=>(!stateFilter||a.region===stateFilter)&&inWho(a,whoFilter)).map(a=>a.sport))].sort();
+ const spCount={};ALL.forEach(a=>{if((!stateFilter||a.region===stateFilter)&&inWho(a,whoFilter))spCount[a.sport]=(spCount[a.sport]||0)+1});
+ const spAll=Object.keys(spCount).sort((p,q)=>spCount[q]-spCount[p]);const sports=spAll.slice(0,10);if(sportFilter&&spCount[sportFilter]&&!sports.includes(sportFilter))sports.push(sportFilter);sports.sort();
+ const moreSports=spAll.filter(x=>!sports.includes(x)).sort();
  const cnt=k=>ALL.filter(a=>base(a)&&inWho(a,k)).length.toLocaleString();
  const regions=Object.entries(ALL.reduce((m,a)=>{if(a.region&&(!sportFilter||a.sport===sportFilter))m[a.region]=(m[a.region]||0)+1;return m},{})).sort((x,y)=>x[0].localeCompare(y[0]));
  const US=new Set(Object.keys(STATE_ABBR));const usR=regions.filter(([r])=>US.has(r)),abroad=regions.filter(([r])=>!US.has(r));
@@ -514,7 +516,7 @@ function explore(){
  view.innerHTML=`
  <section class="stack-head"><div>${head}</div>
   <div class="filters"><div class="chips" aria-label="Who">${WHO.map(([k,l])=>`<button class="chip ${whoFilter===k&&!query?"on":""}" data-who="${k}">${l} <b>${cnt(k)}</b></button>`).join("")}</div>
-  <div class="chips" aria-label="Sport">${["All",...sports].map(s=>`<button class="chip sm ${(s==="All"&&!sportFilter)||s===sportFilter?"on":""}" data-sport="${s}">${s}</button>`).join("")}</div>
+  <div class="chips" aria-label="Sport">${["All",...sports].map(s=>`<button class="chip sm ${(s==="All"&&!sportFilter)||s===sportFilter?"on":""}" data-sport="${s}">${s}</button>`).join("")}${moreSports.length?`<select class="chip sm" id="more-sports" aria-label="More sports"><option value="">More sports (${moreSports.length})</option>${moreSports.map(x=>`<option value="${esc(x)}">${esc(x)} (${spCount[x].toLocaleString()})</option>`).join("")}</select>`:""}</div>
   <label class="statepick"><span class="eyebrow">Home state</span><select id="statepick"><option value="">Anywhere</option><optgroup label="United States">${usR.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n.toLocaleString()})</option>`).join("")}</optgroup>${abroad.length?`<optgroup label="Outside the U.S.">${abroad.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n})</option>`).join("")}</optgroup>`:""}</select></label></div></section>
  <div class="stack-grid"><div class="pool" id="pool"></div><div class="side-col"><aside class="who" id="who" aria-live="polite"></aside><section class="game" id="game"></section></div></div>
  <div class="hall" style="margin-top:28px">
@@ -529,6 +531,7 @@ function explore(){
  const reset=()=>{floorN=FLOOR_STEP;if(query){query="";document.getElementById("q").value=""}};
  view.querySelectorAll("[data-dim]").forEach(b=>b.onclick=()=>{groupBy=b.dataset.dim;explore()});
  view.querySelectorAll("[data-sport]").forEach(b=>b.onclick=()=>{sportFilter=b.dataset.sport==="All"?null:b.dataset.sport;floorN=FLOOR_STEP;explore()});
+ const ms_=view.querySelector("#more-sports");if(ms_)ms_.onchange=()=>{if(ms_.value){sportFilter=ms_.value;floorN=FLOOR_STEP;explore()}};
  view.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{whoFilter=b.dataset.who;reset();explore()});
  view.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{stateFilter=b.dataset.state;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"map"});reset();explore();window.scrollTo({top:0})});
  document.getElementById("statepick").onchange=e=>{stateFilter=e.target.value;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"picker"});reset();explore()};

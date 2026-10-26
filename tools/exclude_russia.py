@@ -1,6 +1,6 @@
 """Site policy: no athletes born in Russia, and no Russian awards.
 
-Runs on the built data files (data/nfl.json, mlb.json, hoops.json and their
+Runs on the built data files (data/nfl.json, mlb.json, hoops.json, olympics.json and their
 room folders), so it can be re-run after any rebuild. It is safe to run twice.
 
 1. Athletes born in present-day Russia are removed (rooms included).
@@ -172,5 +172,5 @@ def run(name, rooms_dir):
     for r in removed_people: print(f"   - {r[1]} ({B[r[4]] if r[4] < len(B) else ''})")
 
 if __name__ == "__main__":
-    for name, rooms in (("nfl.json", "rooms"), ("mlb.json", "mlb-rooms"), ("hoops.json", "hoops-rooms")):
+    for name, rooms in (("nfl.json", "rooms"), ("mlb.json", "mlb-rooms"), ("hoops.json", "hoops-rooms"), ("olympics.json", "olympics-rooms")):
         if os.path.exists(os.path.join(ROOT, "data", name)): run(name, rooms)
