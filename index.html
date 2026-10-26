@@ -222,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. Basketball and Olympic medals from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. World map from Natural Earth (via world-atlas). Basketball and Olympic medals from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
 </div>
 
 <script>
@@ -487,9 +487,34 @@ function cardHTML(a){const meta=a.gen?[a.pos,a.teams.at(-1),a.era].filter(Boolea
 function floorHTML(list,n){return list.slice(0,n).map(cardHTML).join("")+(list.length>n?`<button class="chip more" data-more="1">Show ${Math.min(FLOOR_STEP,list.length-n).toLocaleString()} more of ${(list.length-n).toLocaleString()}</button>`:"")}
 function wireMore(host,list){host.addEventListener("click",e=>{if(!e.target.closest("[data-more]"))return;floorN+=FLOOR_STEP;host.innerHTML=floorHTML(list,floorN)})}
 
-const POOL_CAP=300,FLOOR_STEP=240;let floorN=FLOOR_STEP;
-const byTrophies=(x,y)=>total(y)-total(x)||((y.grp==="active")-(x.grp==="active"))||x.name.localeCompare(y.name);
-let whoFilter="all",stateFilter="";
+const POOL_CAP=(typeof innerWidth!=="undefined"&&innerWidth<700)?150:300,FLOOR_STEP=240;let floorN=FLOOR_STEP;
+// Prestige, not raw trophy count: a Hall of Fame plaque or an MVP outweighs a stack of college all-conference picks,
+// so no sport floods the field just because its players list more honors.
+const MAJOR_HOF=/^(Pro Football|Naismith Memorial Basketball|National Baseball|Hockey|Women's Basketball|International Swimming|National Soccer|World Rugby|IIHF) Hall of Fame|^Naismith|^Pro Football Hall of Fame$/;
+const SCHOOL=/All-American|All-(ACC|SEC|Big|Pac|WAC|MAC|MVC|WCC|Conference|Atlantic|America|Ivy|SoCon|Sun Belt|Mountain|OVC|SWC|Southern|Missouri|Horizon|Patriot|Colonial|MAAC|Summit|Southland|C-USA|American)|Conference|Freshman|NCAA|College|Collegiate|Consensus|Parade|McDonald|High School|Heisman|Wooden|USBWA|Big Ten|Big East|Big 12|SoCon|Southeastern|Mr\. Basketball|Kodak|WBCA|Wade Trophy|Honda|Maxwell|Outland|Biletnikoff|Butkus|Hobey Baker|Kazmaier|D-League|G League|CBA|Summer League/i;
+const BIG=/^(NBA|WNBA|ABA|NFL|AFL|AP NFL|NHL|MLS|NWSL)\b.*(MVP|Most Valuable|Player of the Year|Rookie of the Year|Defensive Player)|^(NBA|WNBA|Super Bowl|World Series) (Finals )?MVP|^MVP$|^Cy Young|^Hart Memorial|^Vezina|^James Norris|^Conn Smythe|^Ballon d'Or|^FIFA (World Player|Best)|^Golden Ball|^Triple Crown|^Pitching Triple Crown|^Rookie of the Year$|^Art Ross|^Calder/;
+function wt(w){const n=w.n,school=SCHOOL.test(n);
+ if(w.k==="plaque"&&/Hall of Fame/.test(n))return MAJOR_HOF.test(n)?14:school?1:2;
+ if(w.k==="medal")return /^Olympic gold/.test(n)?6:/^Olympic silver/.test(n)?4:/^Olympic bronze/.test(n)?3:/World Cup|World Championships?/.test(n)?2:1;
+ if(w.c==="Championships")return school?1.5:w.k==="ring"?5:/Pennant/.test(n)?2:/Stanley Cup|World Series|Super Bowl|NBA|WNBA|NFL|AFL|Champions League|World Cup/.test(n)?5:1.5;
+ if(w.c==="Individual")return school?.8:BIG.test(n)?6:/All-Pro|All-NBA|All-WNBA|All-MLB|All-Star Team|First Team|First-team/.test(n)?2:1.5;
+ if(w.c==="Selections")return school?.25:1;
+ return 1.5}
+const score=a=>a._s!=null?a._s:(a._s=a.awards.reduce((s,w)=>{const x=w.x||1;return s+wt(w)*(1+(x-1)*.7)},0));
+const byTrophies=(x,y)=>score(y)-score(x)||((y.grp==="active")-(x.grp==="active"))||x.name.localeCompare(y.name);
+// The field: seats shared out across sports (by the square root of each sport's notable athletes), best of each sport first.
+function fieldOf(list,cap){
+ if(sportFilter||query)return list.slice(0,cap);
+ const bySp={};list.forEach(a=>{(bySp[a.sport]=bySp[a.sport]||[]).push(a)});
+ const notable=Object.fromEntries(Object.entries(bySp).map(([k,v])=>[k,v.filter(a=>score(a)>=6).length]));
+ const tot=Object.values(notable).reduce((s,n)=>s+Math.sqrt(n),0)||1;
+ const seats={};Object.keys(bySp).forEach(k=>{seats[k]=Math.min(bySp[k].length,notable[k]?Math.max(2,Math.round(cap*Math.sqrt(notable[k])/tot)):0)});
+ let picked=[];Object.entries(bySp).forEach(([k,v])=>{picked=picked.concat(v.slice(0,seats[k]))});
+ if(picked.length>cap)picked=picked.sort(byTrophies).slice(0,cap);
+ if(picked.length<cap){const have=new Set(picked);picked=picked.concat(list.filter(a=>!have.has(a)).slice(0,cap-picked.length))}
+ const rank={},seen={};picked.sort(byTrophies).forEach(a=>{const i=(seen[a.sport]=(seen[a.sport]||0)+1);rank[a.id]=i/(seats[a.sport]||1)});
+ return picked.sort((x,y)=>rank[x.id]-rank[y.id]||byTrophies(x,y))}
+let whoFilter="all",stateFilter="",mapMode="world";
 const WHO=[["all","Everyone"],["active","Active"],["hof","Hall of Fame"]];
 const isHOF=a=>a.grp==="hof"||a.awards.some(w=>/^(Pro Football|Naismith|National Baseball|Hockey) Hall of Fame/.test(w.n)||w.n==="Pro Football Hall of Fame");
 const isActive=a=>a.grp==="active"||(a.cur&&/present/.test(a.era||""));
@@ -512,31 +537,32 @@ function explore(){
  const US=new Set(Object.keys(STATE_ABBR));const usR=regions.filter(([r])=>US.has(r)),abroad=regions.filter(([r])=>!US.has(r));
  const where=stateFilter?`born in ${stateFilter}`:"";
  const head=query?`<div class="eyebrow">Search · every athlete in the building</div><h1>Results</h1>`
-  :`<div class="eyebrow">${[sportFilter||"Every sport",stateFilter||"Everywhere"].join(" · ")} · ${scopeSet.length.toLocaleString()} athletes</div><h1>${stateFilter?esc(stateFilter):"The Hall"}</h1><p class="lede">${stateFilter?`Everyone ${where}, in one place. The most decorated stand up front. Click anyone to walk into their trophy room.`:`Every athlete's trophy room, in one building. The ${POOL_CAP} most decorated stand in the field. Search, pick a home state, or browse to find anyone else.`}</p>`;
+  :`<div class="eyebrow">${[sportFilter||"Every sport",stateFilter||"Everywhere"].join(" · ")} · ${scopeSet.length.toLocaleString()} athletes</div><h1>${stateFilter?esc(stateFilter):"The Hall"}</h1><p class="lede">${stateFilter?`Everyone ${where}, in one place. The most decorated stand up front. Click anyone to walk into their trophy room.`:`Every athlete's trophy room, in one building. The ${POOL_CAP} most decorated stand in the field. Search, pick a home state or country, or browse to find anyone else.`}</p>`;
  view.innerHTML=`
  <section class="stack-head"><div>${head}</div>
   <div class="filters"><div class="chips" aria-label="Who">${WHO.map(([k,l])=>`<button class="chip ${whoFilter===k&&!query?"on":""}" data-who="${k}">${l} <b>${cnt(k)}</b></button>`).join("")}</div>
   <div class="chips" aria-label="Sport">${["All",...sports].map(s=>`<button class="chip sm ${(s==="All"&&!sportFilter)||s===sportFilter?"on":""}" data-sport="${s}">${s}</button>`).join("")}${moreSports.length?`<select class="chip sm" id="more-sports" aria-label="More sports"><option value="">More sports (${moreSports.length})</option>${moreSports.map(x=>`<option value="${esc(x)}">${esc(x)} (${spCount[x].toLocaleString()})</option>`).join("")}</select>`:""}</div>
-  <label class="statepick"><span class="eyebrow">Home state</span><select id="statepick"><option value="">Anywhere</option><optgroup label="United States">${usR.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n.toLocaleString()})</option>`).join("")}</optgroup>${abroad.length?`<optgroup label="Outside the U.S.">${abroad.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n})</option>`).join("")}</optgroup>`:""}</select></label></div></section>
+  <label class="statepick"><span class="eyebrow">Home state or country</span><select id="statepick"><option value="">Anywhere</option><optgroup label="United States">${usR.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n.toLocaleString()})</option>`).join("")}</optgroup>${abroad.length?`<optgroup label="Countries">${abroad.map(([r,n])=>`<option value="${esc(r)}" ${r===stateFilter?"selected":""}>${esc(r)} (${n})</option>`).join("")}</optgroup>`:""}</select></label></div></section>
  <div class="stack-grid"><div class="pool" id="pool"></div><div class="side-col"><aside class="who" id="who" aria-live="polite"></aside><section class="game" id="game"></section></div></div>
  <div class="hall" style="margin-top:28px">
-  <section class="wall"><div class="eyebrow">${stateFilter?`Hometowns in ${esc(stateFilter)}`:"Where they were born"}</div><div id="map"></div><p class="note">${stateFilter?"Tap a pin to open that hometown.":"Tap a state to see everyone born there."}</p></section>
+  <section class="wall"><div class="eyebrow" style="display:flex;justify-content:space-between;align-items:center;gap:8px">${stateFilter?`Hometowns in ${esc(stateFilter)}`:"Where they were born"}${stateFilter?"":`<span class="chips" style="margin:0">${[["world","World"],["us","U.S."]].map(([k,l])=>`<button class="chip sm ${mapMode===k?"on":""}" data-mapmode="${k}">${l}</button>`).join("")}</span>`}</div><div id="map"></div><p class="note">${stateFilter?"Tap a pin to open that hometown.":"Tap a country or state to see everyone born there."}</p></section>
   <section class="aisles"><div class="aisle"><h2>BROWSE BY</h2>
     <div class="tabs" role="tablist">${Object.entries(DIMS).map(([k,d])=>`<button class="tab ${k===groupBy?"on":""}" data-dim="${k}" role="tab" aria-selected="${k===groupBy}">${d.label}</button>`).join("")}</div>
     <div class="chips">${groups(groupBy,scopeSet).filter(([,as])=>groupBy==="sport"||as.length>1).slice(0,40).map(([g,as])=>`<button class="chip" data-hub="${groupBy}" data-name="${esc(g)}">${esc(g)} <b>${as.length.toLocaleString()}</b></button>`).join("")}</div></div>
-   ${stateFilter?`<div class="aisle"><h2>HOMETOWN LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">Towns in ${esc(stateFilter)} ranked by the trophies their natives won.</p>${townBoard(scopeSet)}</div>`:`<div class="aisle"><h2>STATE LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">States ranked by the trophies their natives won. Tap one to walk its field.</p>${stateBoard(scopeSet)}</div>`}</section>
+   ${stateFilter?`<div class="aisle"><h2>HOMETOWN LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">Towns in ${esc(stateFilter)} ranked by the trophies their natives won.</p>${townBoard(scopeSet)}</div>`:`<div class="aisle"><h2>STATE &amp; COUNTRY LEADERBOARD</h2><p class="note" style="margin:-4px 0 8px">U.S. states and countries ranked by the trophies their natives won. Tap one to walk its field.</p>${stateBoard(scopeSet)}</div>`}</section>
  </div>
- <div class="floor-head"><div><div class="eyebrow">Everyone, by trophy count</div><h2>${list.length.toLocaleString()} athlete${list.length===1?"":"s"}${query?` matching “${esc(query)}”`:""}</h2></div></div>
+ <div class="floor-head"><div><div class="eyebrow">Everyone, most decorated first</div><h2>${list.length.toLocaleString()} athlete${list.length===1?"":"s"}${query?` matching “${esc(query)}”`:""}</h2></div></div>
  <div class="floor" id="floor">${floorHTML(list,floorN)||`<p class="note">No one matches that yet. Try a school, team or town.</p>`}</div>`;
  const reset=()=>{floorN=FLOOR_STEP;if(query){query="";document.getElementById("q").value=""}};
  view.querySelectorAll("[data-dim]").forEach(b=>b.onclick=()=>{groupBy=b.dataset.dim;explore()});
  view.querySelectorAll("[data-sport]").forEach(b=>b.onclick=()=>{sportFilter=b.dataset.sport==="All"?null:b.dataset.sport;floorN=FLOOR_STEP;explore()});
  const ms_=view.querySelector("#more-sports");if(ms_)ms_.onchange=()=>{if(ms_.value){sportFilter=ms_.value;floorN=FLOOR_STEP;explore()}};
+ view.querySelectorAll("[data-mapmode]").forEach(b=>b.onclick=()=>{mapMode=b.dataset.mapmode;explore()});
  view.querySelectorAll("[data-who]").forEach(b=>b.onclick=()=>{whoFilter=b.dataset.who;reset();explore()});
  view.querySelectorAll("[data-state]").forEach(b=>b.onclick=()=>{stateFilter=b.dataset.state;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"map"});reset();explore();window.scrollTo({top:0})});
  document.getElementById("statepick").onchange=e=>{stateFilter=e.target.value;if(stateFilter)TC.t("state_selected",{state:stateFilter,via:"picker"});reset();explore()};
  wireMore(document.getElementById("floor"),list);
- const crowd=list.slice(0,POOL_CAP);
+ const crowd=fieldOf(list,POOL_CAP);
  if(crowd.length)poolCleanup=poolView(document.getElementById("pool"),document.getElementById("who"),crowd);else document.getElementById("pool").innerHTML=`<p class="note" style="padding:24px;color:#fff">No one matches that yet.</p>`;
  drawMap(document.getElementById("map"),list.length?list:ALL,stateFilter&&!query?stateFilter:"");
  gameView(document.getElementById("game"));
@@ -546,7 +572,51 @@ function townBoard(set){const m={};set.filter(a=>a.born&&a.region===stateFilter)
  const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
  if(!rows.length)return `<p class="note">No hometowns on record yet.</p>`;
  return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-hub="born" data-name="${esc(r.t)}">${esc(r.t.replace(/,\s*[A-Z]{2}$/,""))}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr.toLocaleString()}<small> · ${r.n} ${r.n===1?"athlete":"athletes"}</small></span></li>`).join("")}</ol>`}
-function stateBoard(set){const m={};set.filter(a=>a.region&&STATE_ABBR[a.region]).forEach(a=>{const t=a.region;(m[t]=m[t]||{t,n:0,tr:0});m[t].n++;m[t].tr+=total(a)});
+// World map: no focus = every state and country as a bubble; a country in focus = its hometowns.
+let WORLD110=null;   // all countries, 1:110m (world-atlas / Natural Earth), loaded the first time the world map is drawn
+function drawWorld(el,people,focus,others){
+ if(!people.length){el.innerHTML=`<p class="note">No birthplaces on record yet.</p>`;return}
+ if(!WORLD110){el.innerHTML=`<p class="note">Loading the map…</p>`;fetch("data/world-110m.json").then(r=>r.json()).then(w=>{WORLD110=w;if(el.isConnected)drawWorld(el,people,focus,others)}).catch(()=>{WORLD110=WORLD;if(el.isConnected)drawWorld(el,people,focus,others)});return}
+ const W=720,H=focus?460:400;
+ const agg=!focus;
+ const US_=a=>STATE_ABBR[a.region]||a.region==="District of Columbia";
+ const groups={};people.forEach(a=>{const k=agg?(US_(a)?"United States":(a.region||"Unknown")):a.born;const t=(groups[k]=groups[k]||{name:k,lat:0,lon:0,ppl:[]});t.ppl.push(a);t.lat+=a.lat;t.lon+=a.lon});
+ Object.values(groups).forEach(t=>{t.lat/=t.ppl.length;t.lon/=t.ppl.length});
+ const ranked=Object.values(groups).sort((a,b)=>b.ppl.length-a.ppl.length);
+ const proj=agg?d3.geoNaturalEarth1().fitExtent([[8,8],[W-8,H-8]],{type:"Sphere"})
+  :d3.geoMercator().fitExtent([[40,30],[W-90,H-30]],(()=>{const xs=people.map(p=>p.lon),ys=people.map(p=>p.lat);const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);const cx=(x0+x1)/2,cy=(y0+y1)/2,sx=Math.max(2.5,(x1-x0)/2+.6),sy=Math.max(1.6,(y1-y0)/2+.5);return{type:"MultiPoint",coordinates:[[cx-sx,cy-sy],[cx+sx,cy+sy],[cx-sx,cy+sy],[cx+sx,cy-sy]]}})());
+ const path=d3.geoPath(proj);
+ const land=topojson.feature(WORLD110,WORLD110.objects.countries);
+ const svg=d3.create("svg").attr("viewBox",`0 0 ${W} ${H}`).attr("role","img").attr("aria-label",focus?`Map of hometowns in ${focus}`:"World map of athlete birthplaces");
+ svg.append("rect").attr("width",W).attr("height",H).attr("fill","var(--water)").attr("rx",6);
+ svg.append("g").selectAll("path").data(land.features).join("path").attr("d",path).attr("fill","var(--land-us)").attr("stroke","var(--line)").attr("stroke-width",.6);
+ const g=svg.append("g"),boxes=[],maxN=ranked[0].ppl.length;
+ const labelSet=new Set(ranked.slice(0,agg?16:18).map(t=>t.name));
+ ranked.slice().reverse().forEach(t=>{
+  const [x,y]=proj([t.lon,t.lat]);if(!isFinite(x)||x<0||x>W||y<0||y>H)return;
+  const r=agg?2.5+Math.sqrt(t.ppl.length/maxN)*20:maxN>8?3+Math.sqrt(t.ppl.length/maxN)*15:Math.min(18,4+t.ppl.length*2.2);
+  const p=g.append("g").attr("class","pin").attr("tabindex",0).attr("role","button").attr("aria-label",`${t.name}: ${t.ppl.length.toLocaleString()} athletes`);
+  p.append("title").text(`${t.name}: ${t.ppl.length.toLocaleString()} athletes${agg&&t.name==="United States"?" (tap for the state map)":""}`);
+  const open=()=>agg?(t.name==="United States"?(mapMode="us",explore()):go({v:"hub",dim:"region",name:t.name})):t.ppl.length===1?(TC.src="map",go({v:"ath",id:t.ppl[0].id})):go({v:"hub",dim:"born",name:t.name});
+  p.on("click",open).on("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}});
+  p.append("circle").attr("class","dot").attr("cx",x).attr("cy",y).attr("r",r).attr("fill-opacity",agg?.7:1);
+  t._xy=[x,y,r,p];
+ });
+ ranked.forEach(t=>{if(!t._xy)return;const [x,y,r,p]=t._xy;
+  const lab=labelSet.has(t.name)?(agg?`${t.name} (${t.ppl.length.toLocaleString()})`:t.ppl.length>1?`${t.name.split(",")[0]} (${t.ppl.length})`:t.ppl[0].name):"";
+  if(!lab)return;
+  const w=lab.length*5.6,h=13;let lx=x+r+4,ly=y+4;
+  const hit=(bx,by)=>boxes.some(b=>bx<b.x+b.w&&bx+w>b.x&&by-h<b.y&&by>b.y-b.h);
+  if(lx+w>W-4)lx=x-r-4-w;
+  if(hit(lx,ly)){ly=y-r-3;lx=x-w/2;if(hit(lx,ly)||ly<12)return}
+  boxes.push({x:lx,y:ly,w,h});
+  p.append("text").attr("x",lx).attr("y",ly).text(lab);
+ });
+ el.innerHTML="";el.appendChild(svg.node());
+ if(others&&others.length&&focus){const n=document.createElement("p");n.className="note";n.textContent=`${others.length.toLocaleString()} more were born outside ${focus}.`;el.appendChild(n)}
+}
+
+function stateBoard(set){const m={};set.filter(a=>a.region).forEach(a=>{const t=a.region;(m[t]=m[t]||{t,n:0,tr:0});m[t].n++;m[t].tr+=total(a)});
  const rows=Object.values(m).sort((p,q)=>q.tr-p.tr||q.n-p.n).slice(0,10);const max=rows[0]?.tr||1;
  if(!rows.length)return `<p class="note">No birthplaces on record yet.</p>`;
  return `<ol class="lb">${rows.map((r,i)=>`<li><span class="lb-r">${i+1}</span><button class="link lb-n" data-state="${esc(r.t)}">${esc(r.t)}</button><span class="lb-bar"><i style="width:${Math.max(4,r.tr/max*100)}%"></i></span><span class="lb-v">${r.tr.toLocaleString()}<small> · ${r.n.toLocaleString()} athletes</small></span></li>`).join("")}</ol>`}
@@ -555,6 +625,8 @@ const STATE_ABBR={"Alabama":"AL","Alaska":"AK","Arizona":"AZ","Arkansas":"AR","C
 function drawMap(el,people,focus){
  people=people.filter(p=>p.lat!=null&&p.born);
  const others=focus?people.filter(p=>p.region!==focus):[];if(focus)people=people.filter(p=>p.region===focus);
+ const usFocus=!!(focus&&STATE_ABBR[focus]);
+ if(!usFocus&&(focus||mapMode==="world"))return drawWorld(el,people,focus,others);
  const away=people.filter(p=>!(p.lon>-130&&p.lon<-55&&p.lat>15&&p.lat<60));people=people.filter(p=>!away.includes(p));if(!people.length){el.innerHTML=`<p class="note">${away.length?"Born outside North America.":"No birthplaces on record yet."}</p>`;return}
  const agg=!focus&&people.length>180;
  const W=720,H=460;
