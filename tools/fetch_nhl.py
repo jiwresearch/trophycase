@@ -68,7 +68,8 @@ if not os.path.exists(P("wd_bio.json")):
     print("Using", leagues)
     bio, awards = {}, []
     for lg, prop in leagues.items():
-        for L in string.ascii_lowercase:
+        # PWHL ids are numeric, so one unfiltered pass ("" matches every id) instead of a-z
+        for L in ([""] if lg == "PWHL" else string.ascii_lowercase):
             t0 = time.time()
             rows = q(f"""SELECT ?item ?id ?name ?dob ?sexL ?pobL ?coord ?stateL ?countryL ?wp WHERE {{
   ?item wdt:{prop} ?id . FILTER(STRSTARTS(LCASE(?id), "{L}"))
