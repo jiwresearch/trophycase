@@ -146,7 +146,7 @@ CURATED, _ = json.JSONDecoder().raw_decode(html[i:])
 cur_names = {norm(a["name"]) for a in CURATED}
 taken = {a["id"] for a in CURATED}
 on_site = defaultdict(set)   # name -> sports already covered by generated wings
-for f_, sp in (("nfl.json", "Football"), ("mlb.json", "Baseball"), ("hoops.json", "Basketball")):
+for f_, sp in (("nfl.json", "Football"), ("mlb.json", "Baseball"), ("hoops.json", "Basketball"), ("nhl.json", "Hockey")):
     p = os.path.join(ROOT, "data", f_)
     if os.path.exists(p):
         d = json.load(open(p, encoding="utf-8"))

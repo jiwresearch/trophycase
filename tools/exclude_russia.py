@@ -172,5 +172,5 @@ def run(name, rooms_dir):
     for r in removed_people: print(f"   - {r[1]} ({B[r[4]] if r[4] < len(B) else ''})")
 
 if __name__ == "__main__":
-    for name, rooms in (("nfl.json", "rooms"), ("mlb.json", "mlb-rooms"), ("hoops.json", "hoops-rooms"), ("olympics.json", "olympics-rooms")):
+    for name, rooms in (("nfl.json", "rooms"), ("mlb.json", "mlb-rooms"), ("hoops.json", "hoops-rooms"), ("olympics.json", "olympics-rooms"), ("nhl.json", "nhl-rooms")):
         if os.path.exists(os.path.join(ROOT, "data", name)): run(name, rooms)

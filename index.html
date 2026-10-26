@@ -222,7 +222,7 @@ h2{font-size:20px}
   </header>
   <nav class="crumbs" id="crumbs"></nav>
   <main id="view"></main>
-  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. World map from Natural Earth (via world-atlas). Basketball and Olympic medals from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
+  <p class="note disclaimer">Prototype. Featured rooms (those with stories) compiled from public sources and not yet checked against official records. NFL rosters from nflverse; birthplaces and honors from Wikidata. World map from Natural Earth (via world-atlas). Basketball, hockey and Olympic medals from Wikipedia and Wikidata (<a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA</a>). Baseball from the <a href="https://sabr.org/lahman-database/">SABR Lahman Baseball Database</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</a>); stats and awards credited as published there. League titles are credited to everyone on the champion&rsquo;s season roster. Figures are generic stand-ins, not likenesses. Trophy shapes are generic stand-ins, not the leagues' actual designs. We count visits anonymously to improve the site, with no cookies and no personal details; <a href="?notrack">opt out on this device</a>.</p>
 </div>
 
 <script>
@@ -290,7 +290,7 @@ const byId=Object.fromEntries(A.map(a=>[a.id,a]));
 const hay=a=>a._h||(a._h=[a.name,a.pos||"",a.college,a.born,a.region,...a.teams].join(" ").toLowerCase());
 const isWV=a=>a.cur||(a.wv&&a.wv.length>0);
 let NFL_N=0,nflState="idle",pendingHash=null;
-const GEN_FILES=["data/nfl.json","data/mlb.json","data/hoops.json","data/olympics.json"];
+const GEN_FILES=["data/nfl.json","data/mlb.json","data/hoops.json","data/olympics.json","data/nhl.json"];
 function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=d.rooms||"rooms";
   d.rows.forEach(r=>{if(byId[r[0]])return;const col=d.colleges[r[8]];const src=d.srcfmt&&r[14]?d.srcfmt.replace("{0}",r[14][0]).replace("{id}",r[14]):r[14];
    const a={id:r[0],name:r[1],pos:r[2],grp:G[r[3]],sport:d.sports&&r[16]!=null?d.sports[r[16]]:sport,born:d.born[r[4]],region:d.regions[r[5]],lat:r[6],lon:r[7],college:col,colleges:col==="—"?[]:col.split("; "),teams:r[9].map(i=>d.teams[i]),era:r[10],jersey:r[11],
@@ -492,7 +492,7 @@ const POOL_CAP=(typeof innerWidth!=="undefined"&&innerWidth<700)?150:300,FLOOR_S
 // so no sport floods the field just because its players list more honors.
 const MAJOR_HOF=/^(Pro Football|Naismith Memorial Basketball|National Baseball|Hockey|Women's Basketball|International Swimming|National Soccer|World Rugby|IIHF) Hall of Fame|^Naismith|^Pro Football Hall of Fame$/;
 const SCHOOL=/All-American|All-(ACC|SEC|Big|Pac|WAC|MAC|MVC|WCC|Conference|Atlantic|America|Ivy|SoCon|Sun Belt|Mountain|OVC|SWC|Southern|Missouri|Horizon|Patriot|Colonial|MAAC|Summit|Southland|C-USA|American)|Conference|Freshman|NCAA|College|Collegiate|Consensus|Parade|McDonald|High School|Heisman|Wooden|USBWA|Big Ten|Big East|Big 12|SoCon|Southeastern|Mr\. Basketball|Kodak|WBCA|Wade Trophy|Honda|Maxwell|Outland|Biletnikoff|Butkus|Hobey Baker|Kazmaier|D-League|G League|CBA|Summer League/i;
-const BIG=/^(NBA|WNBA|ABA|NFL|AFL|AP NFL|NHL|MLS|NWSL)\b.*(MVP|Most Valuable|Player of the Year|Rookie of the Year|Defensive Player)|^(NBA|WNBA|Super Bowl|World Series) (Finals )?MVP|^MVP$|^Cy Young|^Hart Memorial|^Vezina|^James Norris|^Conn Smythe|^Ballon d'Or|^FIFA (World Player|Best)|^Golden Ball|^Triple Crown|^Pitching Triple Crown|^Rookie of the Year$|^Art Ross|^Calder/;
+const BIG=/^(NBA|WNBA|ABA|NFL|AFL|AP NFL|NHL|MLS|NWSL)\b.*(MVP|Most Valuable|Player of the Year|Rookie of the Year|Defensive Player)|^(NBA|WNBA|Super Bowl|World Series) (Finals )?MVP|^MVP$|^Cy Young|^Hart Memorial|^Hart Trophy|^Vezina|^James Norris|^Norris Trophy|^Conn Smythe|^Ballon d'Or|^FIFA (World Player|Best)|^Golden Ball|^Triple Crown|^Pitching Triple Crown|^Rookie of the Year$|^Art Ross|^Calder/;
 function wt(w){const n=w.n,school=SCHOOL.test(n);
  if(w.k==="plaque"&&/Hall of Fame/.test(n))return MAJOR_HOF.test(n)?14:school?1:2;
  if(w.k==="medal")return /^Olympic gold/.test(n)?6:/^Olympic silver/.test(n)?4:/^Olympic bronze/.test(n)?3:/World Cup|World Championships?/.test(n)?2:1;

@@ -1,0 +1,31 @@
+# Wikipedia award-list pages for the hockey build (redirects are followed; missing pages are reported)
+# Stanley Cup Final pages (1915-2026) are added by the script itself.
+List of Stanley Cup champions
+Hart Memorial Trophy
+Vezina Trophy
+James Norris Memorial Trophy
+Calder Memorial Trophy
+Conn Smythe Trophy
+Art Ross Trophy
+Maurice "Rocket" Richard Trophy
+Ted Lindsay Award
+Lady Byng Memorial Trophy
+Frank J. Selke Trophy
+Bill Masterton Memorial Trophy
+King Clancy Memorial Trophy
+Mark Messier Leadership Award
+William M. Jennings Trophy
+NHL All-Star Team
+NHL All-Rookie Team
+List of NHL All-Star Games
+List of Hockey Hall of Fame inductees
+List of members of the Hockey Hall of Fame
+NHL 100 Greatest Players
+WHA Most Valuable Player
+Avco World Trophy
+List of IIHF Hall of Fame inductees
+Hobey Baker Award
+List of Olympic medalists in ice hockey
+Patty Kazmaier Award
+PWHL Most Valuable Player
+Walter Cup
