@@ -14,12 +14,21 @@ def athletes():
                 out[a["id"]] = {"name": a["name"], "teams": a.get("teams", []), "colleges": re.split(r"\s*/\s*|;\s*", a.get("college", "")), "featured": True}
             break
     for f in sorted(glob.glob("data/*.json")):
-        if f.endswith(("puzzles.json", "world-110m.json")):
+        if f.endswith(("puzzles.json", "curated.json", "world-110m.json")):
             continue
         d = json.load(open(f, encoding="utf-8"))
         for r in d.get("rows", []):
             if r[0] not in out:
                 out[r[0]] = {"name": r[1], "teams": [d["teams"][i] for i in r[9]], "colleges": d["colleges"][r[8]].split("; "), "featured": False}
+    try:
+        cur = json.load(open("data/curated.json", encoding="utf-8"))
+    except FileNotFoundError:
+        cur = {}
+    for i, c in cur.items():
+        if i not in out:
+            print(f"  ERROR: data/curated.json has an entry for {i!r}, which is not a room"); continue
+        if c.get("teams"): out[i]["teams"] = c["teams"]
+        if len(c.get("stories", [])) >= 3: out[i]["featured"] = True
     return out
 
 def main():

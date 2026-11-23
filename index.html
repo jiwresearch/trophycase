@@ -257,7 +257,7 @@ const TC=(()=>{
  let room=null;const api={on,t,src:null};
  api.roomOpened=a=>{if(room&&room.id===a.id)return;if(room)api.roomClosed();
   room={id:a.id,t0:Date.now(),kinds:new Set()};const src=api.src||"other";api.src=null;
-  t("room_opened",{athlete_id:a.id,sport:a.sport,featured:!a.gen,source:src,...api.page()})};
+  t("room_opened",{athlete_id:a.id,sport:a.sport,featured:!a.gen||!!a._cs,source:src,...api.page()})};
  api.engage=kind=>{if(!room||room.kinds.has(kind))return;room.kinds.add(kind);t("room_engaged",{athlete_id:room.id,kind})};
  api.roomClosed=beacon=>{if(!room)return;const r=room;room=null;t("room_closed",{athlete_id:r.id,seconds:Math.round((Date.now()-r.t0)/1000),kinds_used:r.kinds.size},beacon)};
  api.inRoom=()=>room&&room.id;
@@ -310,11 +310,20 @@ function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=
    a.line=r[15]||makeLine(a);
    byId[a.id]=a;ALL.push(a)});
   NFL_N+=d.rows.length}
+// Finished rooms: data/curated.json holds written stories and hand corrections for generated rooms, keyed by room id.
+// Fields: line, stories [[year,headline,text]], add [awards], set {award name:{y,x}}, born, region, lat, lon, teams, era. Builds never touch this file.
+function applyCurated(cur){if(!cur||typeof cur!=="object")return;Object.entries(cur).forEach(([id,c])=>{const a=byId[id];if(!a||!c)return;
+  ["line","born","region","lat","lon","teams","era"].forEach(k=>{if(c[k]!=null)a[k]=c[k]});
+  if(c.set)a.awards.forEach(w=>{const s=c.set[w.n];if(s){if(s.y!=null)w.y=s.y;if(s.x!=null)w.x=s.x}});
+  if(Array.isArray(c.add))c.add.forEach(w=>{if(w&&w.n&&!a.awards.some(v=>v.n===w.n))a.awards.push({...w})});
+  if(Array.isArray(c.stories)&&c.stories.length){a._cs=c.stories;a.stories=c.stories}
+  delete a._s;delete a._h})}
 function loadNFL(){if(nflState!=="idle")return;nflState="loading";
  const pz=fetch("data/puzzles.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
- Promise.all([Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))),pz]).then(([res,sched])=>{
+ const cz=fetch("data/curated.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+ Promise.all([Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))),pz,cz]).then(([res,sched,fin])=>{
   PUZZLES=sched&&typeof sched==="object"&&!Array.isArray(sched)?sched:{};
-  let ok=0;res.forEach(x=>{if(x.status==="fulfilled"){addGen(x.value);ok++}});_gn=null;
+  let ok=0;res.forEach(x=>{if(x.status==="fulfilled"){addGen(x.value);ok++}});applyCurated(fin);_gn=null;
   nflState=ok?"ready":"failed";
   if(pendingHash&&byId[pendingHash]){TC.src="link";stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
   pendingHash=null;const cur=stack.at(-1);if(cur.v!=="ath")render()})}
@@ -813,7 +822,7 @@ function clippingsFor(a){
 
 const ROOM_DATA={};
 function roomShard(id){let h=7;for(const c of id)h=(h*31+c.charCodeAt(0))>>>0;return h%256}
-async function roomDetails(a){if(!a.gen||a._d)return;const k=a.rd+"/"+roomShard(a.id);try{if(!ROOM_DATA[k])ROOM_DATA[k]=fetch(`data/${k}.json`).then(r=>r.ok?r.json():{});const d=await ROOM_DATA[k];const x=d[a.id];if(x){a.stories=x[0]||[];a.stats=x[1]||[]}}catch(e){}a._d=1}
+async function roomDetails(a){if(!a.gen||a._d)return;const k=a.rd+"/"+roomShard(a.id);try{if(!ROOM_DATA[k])ROOM_DATA[k]=fetch(`data/${k}.json`).then(r=>r.ok?r.json():{});const d=await ROOM_DATA[k];const x=d[a.id];if(x){a.stories=a._cs||x[0]||[];a.stats=x[1]||[]}}catch(e){}a._d=1}
 
 function clipTex(c,i){return canvasTex(560,760,(x,w,h)=>{x.fillStyle="#efe6d2";x.fillRect(0,0,w,h);const r=rand(11+i*7);for(let k=0;k<1400;k++){x.fillStyle=`rgba(120,90,40,${r()*.06})`;x.fillRect(r()*w,r()*h,2,2)}
  if(!c){x.fillStyle="#7a6a50";x.font="italic 500 30px 'Cormorant Garamond', Georgia, serif";x.textAlign="center";x.fillText("End of the scrapbook",w/2,h/2);return}

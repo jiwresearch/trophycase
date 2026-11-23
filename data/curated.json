@@ -1,0 +1,401 @@
+{
+ "patrick-mahomes": {
+  "line": "The son of a big-league pitcher who turned Kansas City into the NFL's next dynasty.",
+  "stories": [
+   [
+    "2018",
+    "Fifty touchdowns in his first year as a starter",
+    "In his first full season as the Chiefs' starter, Mahomes threw 50 touchdown passes and passed for more than 5,000 yards. He was named NFL MVP at 23."
+   ],
+   [
+    "2020",
+    "Ends Kansas City's 50-year wait",
+    "Down 10 points in the fourth quarter of Super Bowl LIV, Mahomes led three late touchdown drives to beat the 49ers 31–20. It was the Chiefs' first title in 50 years, and he was the game's MVP."
+   ],
+   [
+    "2024",
+    "Back-to-back, in overtime",
+    "Mahomes threw the winning touchdown pass in overtime of Super Bowl LVIII against the 49ers. The Chiefs became the first repeat champions in 19 years, and he won his third Super Bowl MVP."
+   ]
+  ]
+ },
+ "stephen-curry": {
+  "line": "The shooter who changed how basketball is played, from Davidson to four titles with Golden State.",
+  "stories": [
+   [
+    "2008",
+    "Davidson's run to the Elite Eight",
+    "As a sophomore, Curry carried 10th-seeded Davidson past Gonzaga, Georgetown and Wisconsin in the NCAA tournament. The run ended two points short of the Final Four, against eventual champion Kansas."
+   ],
+   [
+    "2016",
+    "The first unanimous MVP",
+    "Curry won his second straight MVP with every first-place vote, the first unanimous choice in NBA history. He made 402 three-pointers that season as the Warriors won a record 73 games."
+   ],
+   [
+    "2022",
+    "Finals MVP at last",
+    "Curry averaged 31.2 points against the Celtics, including 43 in Game 4 in Boston. It was his fourth championship and his first Finals MVP."
+   ]
+  ]
+ },
+ "shohei-ohtani": {
+  "line": "A pitcher and a slugger at once, and the first player to hit 50 home runs and steal 50 bases in a season.",
+  "stories": [
+   [
+    "2021",
+    "A unanimous MVP, pitching and hitting",
+    "Ohtani hit 46 home runs and struck out 156 batters as a pitcher for the Angels. He was the unanimous choice for American League MVP."
+   ],
+   [
+    "2023",
+    "Strikes out Trout to win the WBC",
+    "With Japan one out from the World Baseball Classic title, Ohtani struck out his Angels teammate Mike Trout to beat the United States. He was named the tournament's MVP."
+   ],
+   [
+    "2024",
+    "The first 50–50 season",
+    "In his first year with the Dodgers, Ohtani became the first player with 50 home runs and 50 stolen bases in a season, finishing with 54 and 59. He then won his first World Series."
+   ]
+  ],
+  "set": {
+   "All-Star": {
+    "y": "2021–2026",
+    "x": 6
+   }
+  }
+ },
+ "simone-biles": {
+  "line": "The most decorated gymnast in history, with 41 medals between the Olympics and the World Championships.",
+  "stories": [
+   [
+    "2013",
+    "World champion at 16",
+    "At her first World Championships, in Antwerp, Biles won the all-around title at 16. She went on to win it five more times."
+   ],
+   [
+    "2016",
+    "Four golds in Rio",
+    "Biles won the team, all-around, vault and floor titles at the Rio Olympics, plus a bronze on beam. She carried the U.S. flag at the closing ceremony."
+   ],
+   [
+    "2024",
+    "The comeback in Paris",
+    "Three years after withdrawing from most of her events in Tokyo, Biles won three golds and a silver in Paris. That included her second Olympic all-around title, eight years after her first."
+   ]
+  ],
+  "era": "2013–2024",
+  "add": [
+   {
+    "n": "World Championships gold medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2013–2015, 2018–2019, 2023",
+    "x": 23
+   },
+   {
+    "n": "World Championships silver medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2013–2014, 2018, 2023",
+    "x": 4
+   },
+   {
+    "n": "World Championships bronze medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2013, 2015, 2018",
+    "x": 3
+   },
+   {
+    "n": "AP Female Athlete of the Year",
+    "k": "statue",
+    "c": "Individual",
+    "y": "2016, 2019, 2023",
+    "x": 3
+   },
+   {
+    "n": "Presidential Medal of Freedom",
+    "k": "medal",
+    "c": "Honors & Service",
+    "y": "2022"
+   }
+  ]
+ },
+ "travis-kelce": {
+  "line": "A college quarterback turned tight end who has caught more postseason passes than anyone in NFL history.",
+  "stories": [
+   [
+    "2020",
+    "A record season for a tight end",
+    "Kelce caught 105 passes for 1,416 yards, the most receiving yards by a tight end in a single season."
+   ],
+   [
+    "2023",
+    "Brother against brother",
+    "Kelce's Chiefs beat the Eagles 38–35 in Super Bowl LVII, with his brother Jason starting at center for Philadelphia. They were the first brothers to face each other in a Super Bowl, and Travis caught a touchdown."
+   ],
+   [
+    "2024",
+    "Passes Jerry Rice",
+    "In the AFC Championship Game at Baltimore, Kelce passed Jerry Rice for the most career postseason receptions in NFL history. Two weeks later he won his third Super Bowl."
+   ]
+  ]
+ },
+ "sidney-crosby": {
+  "line": "Captain of the Penguins since he was 19, with three Stanley Cups and two Olympic gold medals.",
+  "stories": [
+   [
+    "2007",
+    "The youngest scoring champion",
+    "At 19, Crosby put up 120 points to win the Art Ross Trophy, the youngest scoring champion in NHL history. He also won the Hart Trophy as league MVP."
+   ],
+   [
+    "2010",
+    "The Golden Goal",
+    "Crosby scored in overtime against the United States to win Olympic gold for Canada on home ice in Vancouver."
+   ],
+   [
+    "2017",
+    "Back-to-back Cups",
+    "Crosby led Pittsburgh past Nashville for a second straight Stanley Cup, the NHL's first repeat champion in 19 years. He won the Conn Smythe Trophy as playoff MVP for the second year running."
+   ]
+  ],
+  "add": [
+   {
+    "n": "IIHF World Championship gold medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2015"
+   },
+   {
+    "n": "World Cup of Hockey champion",
+    "k": "cup",
+    "c": "Championships",
+    "y": "2016"
+   },
+   {
+    "n": "4 Nations Face-Off champion",
+    "k": "cup",
+    "c": "Championships",
+    "y": "2025"
+   }
+  ]
+ },
+ "lebron-james": {
+  "line": "From Akron high school phenom to the NBA's all-time leading scorer, with titles in three cities.",
+  "stories": [
+   [
+    "2012",
+    "A first title, in Miami",
+    "James won his first championship with the Heat, beating Oklahoma City in five games. He was both the regular season MVP and the Finals MVP."
+   ],
+   [
+    "2016",
+    "The comeback from 3–1",
+    "Cleveland became the first team to win the NBA Finals after trailing three games to one, beating a 73-win Golden State team. James's chase-down block in Game 7 helped end the city's 52-year title drought."
+   ],
+   [
+    "2023",
+    "Passes Kareem",
+    "On February 7, 2023, James passed Kareem Abdul-Jabbar's 38,387 points to become the NBA's all-time leading scorer. Abdul-Jabbar had held the record since 1984."
+   ]
+  ],
+  "add": [
+   {
+    "n": "Olympic gold medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2008, 2012, 2024",
+    "x": 3
+   },
+   {
+    "n": "Olympic bronze medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2004"
+   }
+  ]
+ },
+ "aaron-judge": {
+  "line": "The 6-foot-7 Yankees captain who set the American League home run record.",
+  "stories": [
+   [
+    "2017",
+    "Fifty-two home runs as a rookie",
+    "Judge hit 52 home runs, then a record for a rookie, and was the unanimous American League Rookie of the Year. He also won the Home Run Derby."
+   ],
+   [
+    "2022",
+    "Sixty-two",
+    "Judge hit his 62nd home run on October 4 in Texas, passing Roger Maris for an American League record that had stood since 1961. He was named MVP and, that winter, Yankees captain."
+   ],
+   [
+    "2024",
+    "A second MVP and a pennant",
+    "Judge hit 58 home runs with 144 RBIs and was the unanimous MVP. The Yankees reached the World Series for the first time since 2009."
+   ]
+  ],
+  "set": {
+   "All-Star": {
+    "y": "2017–2018, 2021–2026",
+    "x": 8
+   }
+  }
+ },
+ "lamar-jackson": {
+  "line": "A Heisman winner at 19 who has run for more yards than any quarterback in NFL history.",
+  "stories": [
+   [
+    "2016",
+    "The youngest Heisman winner",
+    "As a Louisville sophomore, Jackson accounted for 51 touchdowns and won the Heisman Trophy at 19, the youngest winner in the award's history."
+   ],
+   [
+    "2019",
+    "A unanimous MVP",
+    "In his first full season as a starter, Jackson led the league with 36 touchdown passes and ran for 1,206 yards, a record for a quarterback. He was the second unanimous MVP in NFL history."
+   ],
+   [
+    "2023",
+    "MVP again",
+    "Jackson won his second MVP after leading Baltimore to a league-best 13–4 record and a place in the AFC Championship Game."
+   ]
+  ]
+ },
+ "caitlin-clark": {
+  "line": "College basketball's all-time leading scorer, who brought record crowds with her to the WNBA.",
+  "stories": [
+   [
+    "2023",
+    "A 41-point triple-double",
+    "Clark had 41 points, 10 rebounds and 12 assists against Louisville in the Elite Eight, the first 40-point triple-double in NCAA tournament history. It sent Iowa to the Final Four."
+   ],
+   [
+    "2024",
+    "Passes Pete Maravich",
+    "On March 3, 2024, Clark passed Pete Maravich's 3,667 points to become the leading scorer in NCAA Division I history, men or women. She finished her Iowa career with 3,951."
+   ],
+   [
+    "2024",
+    "Rookie of the Year",
+    "The first pick in the WNBA draft, Clark set league records for assists in a season, with 337, and in a game, with 19. She was named Rookie of the Year."
+   ]
+  ]
+ },
+ "tom-brady": {
+  "line": "The 199th pick in the draft, who went on to win seven Super Bowls, more than any franchise has.",
+  "stories": [
+   [
+    "2002",
+    "From backup to Super Bowl MVP",
+    "Brady took over when Drew Bledsoe was injured in the second game of the 2001 season. He finished it by driving the Patriots to a last-second field goal that beat the Rams in Super Bowl XXXVI."
+   ],
+   [
+    "2017",
+    "The 28–3 comeback",
+    "Trailing Atlanta 28–3 in the third quarter of Super Bowl LI, Brady led the largest comeback in Super Bowl history. The Patriots won 34–28 in the first Super Bowl to go to overtime."
+   ],
+   [
+    "2021",
+    "A seventh ring, with a new team",
+    "In his first season in Tampa Bay, at 43, Brady beat Kansas City 31–9 in Super Bowl LV. It was his seventh title and his fifth Super Bowl MVP."
+   ]
+  ]
+ },
+ "kevin-durant": {
+  "line": "One of the purest scorers basketball has seen, with four scoring titles and four Olympic gold medals.",
+  "stories": [
+   [
+    "2014",
+    "MVP",
+    "Durant averaged 32 points a game to win his fourth scoring title and the MVP award. In his acceptance speech he called his mother \"the real MVP.\""
+   ],
+   [
+    "2017",
+    "The shot in Cleveland",
+    "Durant's pull-up three-pointer late in Game 3 of the Finals put Golden State ahead for good. He won his first championship and the first of two straight Finals MVPs."
+   ],
+   [
+    "2024",
+    "A fourth gold",
+    "In Paris, Durant became the first men's basketball player to win four Olympic gold medals. He is also the United States' all-time leading scorer at the Olympics."
+   ]
+  ],
+  "born": "Washington, DC",
+  "region": "District of Columbia",
+  "lat": 38.895,
+  "lon": -77.037,
+  "teams": [
+   "Seattle SuperSonics",
+   "Oklahoma City Thunder",
+   "Golden State Warriors",
+   "Brooklyn Nets",
+   "Phoenix Suns",
+   "Houston Rockets"
+  ]
+ },
+ "michael-phelps": {
+  "line": "The most decorated Olympian ever, with 28 medals, 23 of them gold.",
+  "stories": [
+   [
+    "2004",
+    "Eight medals in Athens",
+    "At 19, Phelps won six gold and two bronze medals in Athens, matching the record for the most medals at a single Olympics."
+   ],
+   [
+    "2008",
+    "Eight for eight in Beijing",
+    "Phelps won all eight of his events in Beijing, breaking Mark Spitz's record of seven golds at one Games. He won the 100-meter butterfly by one hundredth of a second."
+   ],
+   [
+    "2016",
+    "A last lap in Rio",
+    "Phelps came out of retirement for a fifth Olympics and won five golds and a silver at 31. He carried the U.S. flag at the opening ceremony and retired with 28 medals."
+   ]
+  ],
+  "era": "2000–2016",
+  "add": [
+   {
+    "n": "World Championships gold medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2001, 2003, 2005, 2007, 2009, 2011",
+    "x": 26
+   },
+   {
+    "n": "World Championships silver medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2003, 2005, 2009, 2011",
+    "x": 6
+   },
+   {
+    "n": "World Championships bronze medal",
+    "k": "medal",
+    "c": "International",
+    "y": "2011"
+   }
+  ]
+ },
+ "aaron-rodgers": {
+  "line": "A junior college quarterback who waited three years behind Brett Favre, then won four MVPs.",
+  "stories": [
+   [
+    "2005",
+    "The long wait on draft night",
+    "Projected as a possible first overall pick, Rodgers sat in the green room until Green Bay took him 24th. He then spent three seasons as Brett Favre's backup."
+   ],
+   [
+    "2011",
+    "Super Bowl XLV",
+    "Rodgers threw three touchdown passes to beat Pittsburgh 31–25 and was named Super Bowl MVP. The Packers had entered the playoffs as the sixth seed."
+   ],
+   [
+    "2021",
+    "A fourth MVP",
+    "Rodgers won his second straight MVP and the fourth of his career, one short of Peyton Manning's record five."
+   ]
+  ]
+ }
+}
