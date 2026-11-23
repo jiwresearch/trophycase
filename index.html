@@ -149,6 +149,13 @@ h2{font-size:20px}
 .g-msg{margin:6px 0 0;font-size:13px;color:var(--pin)}
 .g-res{font-size:16px;margin-bottom:10px}
 .g-act{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.g-door{margin:14px 0 0;padding-top:12px;border-top:1px solid var(--line)}
+.g-ways{display:grid;gap:6px;margin-top:8px}
+.g-way{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;align-items:baseline;width:100%;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;color:var(--ink);font:inherit;cursor:pointer}
+.g-way:hover,.g-way:focus-visible{border-color:var(--brass)}
+.g-way span{grid-column:1/-1;font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--muted)}
+.g-way b{font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.g-way em{font-style:normal;font-size:12.5px;color:var(--brass-ink);white-space:nowrap}
 .r-copy{background:none;border:1px solid var(--brass);color:var(--brass-ink);border-radius:8px;padding:9px 14px;cursor:pointer;font-family:var(--label);letter-spacing:.06em;font-size:14px}
 .g-copy{width:100%;max-width:320px;font:13px/1.4 var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:6px}
 .lb{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -250,10 +257,15 @@ const TC=(()=>{
  let room=null;const api={on,t,src:null};
  api.roomOpened=a=>{if(room&&room.id===a.id)return;if(room)api.roomClosed();
   room={id:a.id,t0:Date.now(),kinds:new Set()};const src=api.src||"other";api.src=null;
-  t("room_opened",{athlete_id:a.id,sport:a.sport,featured:!a.gen,source:src})};
+  t("room_opened",{athlete_id:a.id,sport:a.sport,featured:!a.gen,source:src,...api.page()})};
  api.engage=kind=>{if(!room||room.kinds.has(kind))return;room.kinds.add(kind);t("room_engaged",{athlete_id:room.id,kind})};
  api.roomClosed=beacon=>{if(!room)return;const r=room;room=null;t("room_closed",{athlete_id:r.id,seconds:Math.round((Date.now()-r.t0)/1000),kinds_used:r.kinds.size},beacon)};
  api.inRoom=()=>room&&room.id;
+ // ---- the door: clicks from the solved game into the database, and pages opened after ----
+ let door=null;
+ api.doorClicked=p=>{if(!door)door={n:0,t0:Date.now(),no:p&&p.puzzle_no};t("door_clicked",p)};
+ api.page=()=>door?{after_door:++door.n}:{};
+ api.doorEnded=beacon=>{if(!door||door.sent)return;door.sent=true;t("door_session",{puzzle_no:door.no,pages:door.n,seconds:Math.round((Date.now()-door.t0)/1000)},beacon)};
  // ---- search: one event when typing pauses ----
  let sq=null;api.search=(q,count)=>{clearTimeout(sq);if(!q||q.length<3)return;sq=setTimeout(()=>t("search",{query:q.slice(0,40),matches:count()}),1000)};
  // ---- forms: any <form data-track="name"> is tracked; typed values are never sent ----
@@ -269,7 +281,7 @@ const TC=(()=>{
  if(on){
   const start=()=>{scan(document);new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{if(n.nodeType===1){if(n.matches&&n.matches("form[data-track]"))scan(n.parentNode||n);else scan(n)}}))).observe(document.body,{childList:true,subtree:true})};
   document.readyState==="loading"?document.addEventListener("DOMContentLoaded",start):start();
-  addEventListener("pagehide",()=>{abandon();api.roomClosed(true)});
+  addEventListener("pagehide",()=>{abandon();api.roomClosed(true);api.doorEnded(true)});
  }
  return api;
 })();
@@ -299,7 +311,9 @@ function addGen(d){const G=["active","hof","past"],sport=d.sport||"Football",rd=
    byId[a.id]=a;ALL.push(a)});
   NFL_N+=d.rows.length}
 function loadNFL(){if(nflState!=="idle")return;nflState="loading";
- Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))).then(res=>{
+ const pz=fetch("data/puzzles.json").then(r=>r.ok?r.json():{}).catch(()=>({}));
+ Promise.all([Promise.allSettled(GEN_FILES.map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(r.status);return r.json()}))),pz]).then(([res,sched])=>{
+  PUZZLES=sched&&typeof sched==="object"&&!Array.isArray(sched)?sched:{};
   let ok=0;res.forEach(x=>{if(x.status==="fulfilled"){addGen(x.value);ok++}});_gn=null;
   nflState=ok?"ready":"failed";
   if(pendingHash&&byId[pendingHash]){TC.src="link";stack=[{v:"explore"},{v:"ath",id:pendingHash}];pendingHash=null;render();return}
@@ -410,18 +424,32 @@ const LAUNCH=Date.UTC(2026,9,17);
 const store={get(k,d){try{const v=localStorage.getItem("tc:"+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem("tc:"+k,JSON.stringify(v))}catch(e){}}};
 function todayKey(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function puzzleNo(){const d=new Date();return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-LAUNCH)/864e5)+1}
-function gamePool(){return ALL.filter(a=>a.born&&total(a)>=2&&((a.stories||[]).length||isHOF(a)))}
-function dailyAthlete(){const pool=gamePool().sort((p,q)=>p.id.localeCompare(q.id));return pool[(hashStr("tc"+todayKey())%pool.length)]}
-function clueList(a){const top=[...a.awards].sort((p,q)=>({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[p.c])-({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[q.c]))[0];const st=(a.stories||[])[0];
+// Hand-picked puzzles: data/puzzles.json maps "YYYY-MM-DD" to {id, clues:[5], team?, college?}. Days not listed use the automatic pick.
+let PUZZLES={};
+function scheduled(){const p=PUZZLES[todayKey()];return p&&p.id&&byId[p.id]?p:null}
+function gamePool(){const held=new Set(Object.values(PUZZLES).map(p=>p&&p.id).filter(Boolean));return ALL.filter(a=>a.born&&total(a)>=2&&((a.stories||[]).length||isHOF(a))&&!held.has(a.id))}
+function dailyAthlete(){const sp=scheduled();if(sp)return byId[sp.id];const pool=gamePool().sort((p,q)=>p.id.localeCompare(q.id));return pool[(hashStr("tc"+todayKey())%pool.length)]}
+function clueList(a){const sp=scheduled();if(sp&&sp.id===a.id&&Array.isArray(sp.clues)&&sp.clues.length===5)return sp.clues.map(String);const top=[...a.awards].sort((p,q)=>({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[p.c])-({Championships:0,Individual:1,International:2,"Honors & Service":3,Selections:4}[q.c]))[0];const st=(a.stories||[])[0];
  return[`Sport: ${a.sport} · Era: ${a.era}`,`Born in ${a.born}`,a.college&&a.college!=="—"?`College: ${a.college}`:`Went straight to the pros`,top?`On the shelf: ${top.n}${top.x?" ×"+top.x:""}`:`Played for ${a.teams[0]||"—"}`,st?`Big moment, ${st[0]}: “${st[1]}”`:`Teams: ${a.teams.join(", ")}`]}
 
+function doorWays(a){const sp=scheduled(),o=sp&&sp.id===a.id?sp:{};const out=[];
+ const col=o.college||(a.colleges||(a.college&&a.college!=="—"?[a.college]:[]))[0];if(col)out.push(["college","college","College",col]);
+ const tm=o.team||(a.teams||[])[0];if(tm)out.push(["team","team","Team",tm]);
+ if(a.born&&members("born",a.born).length>1)out.push(["hometown","born","Hometown",a.born]);else if(a.region)out.push(["state","region","Home",a.region]);
+ return out.map(w=>[...w,members(w[1],w[3]).length]).filter(w=>w[4]>1)}
+function doorHTML(a){const ws=doorWays(a);if(!ws.length)return"";
+ return`<div class="g-door"><div class="eyebrow">Who else came through here?</div><div class="g-ways">${ws.map(w=>`<button class="g-way" data-hub="${w[1]}" data-name="${esc(w[3])}" data-door="${w[0]}"><span>${w[2]}</span><b>${esc(w[3])}</b><em>${w[4].toLocaleString()} athletes →</em></button>`).join("")}</div></div>`}
+let _gviewed=false,_gio=null;
+function gameSeen(el,props){if(_gio){_gio.disconnect();_gio=null}if(_gviewed)return;const fire=()=>{if(_gviewed)return;_gviewed=true;TC.t("game_viewed",props)};
+ if(!("IntersectionObserver" in window))return fire();
+ _gio=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)){_gio.disconnect();_gio=null;fire()}},{threshold:.5});_gio.observe(el)}
 let _gn=null;function gameNames(){return _gn||(_gn=[...new Set(ALL.filter(a=>total(a)>=1).sort(byTrophies).slice(0,4000).map(a=>a.name))].sort())}
 function gameView(el){
  const a=dailyAthlete();if(!a){el.hidden=true;return}
  const key=todayKey(),no=puzzleNo();let s=store.get("g2:"+key,{guesses:[],done:false,won:false});
- const clues=clueList(a);const MAX=5;
+ const clues=clueList(a);const MAX=5;const hand=!!scheduled();
  function streak(){return store.get("streak",{n:0,last:null})}
- function finish(won){s.done=true;s.won=won;store.set("g2:"+key,s);setTimeout(()=>TC.t("game_finished",{puzzle_no:no,won,guesses:s.guesses.length,streak:streak().n}),0);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
+ function finish(won){s.done=true;s.won=won;store.set("g2:"+key,s);setTimeout(()=>TC.t("game_finished",{puzzle_no:no,won,guesses:s.guesses.length,streak:streak().n,scheduled:hand}),0);const st=streak();if(st.last!==key){const y=new Date(Date.now()-864e5);const yk=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");st.n=won?(st.last===yk?st.n+1:1):0;st.last=key;store.set("streak",st)}}
  function shareText(){const marks=s.guesses.map(g=>g===a.id?"🏆":"⬛").join("");return`Trophy Case · Whose Case #${no}\n${marks} ${s.won?s.guesses.length+"/"+MAX:"X/"+MAX}\nhttps://trophycase.fyi/?ref=game`}
  function paint(){
   const shown=s.done?MAX:Math.min(MAX,s.guesses.length+1);
@@ -429,20 +457,21 @@ function gameView(el){
    <div class="g-body"><canvas class="g-sil" width="120" height="170" aria-hidden="true"></canvas>
     <div class="g-main"><ol class="g-clues">${clues.slice(0,shown).map((c,i)=>`<li class="${i===shown-1&&!s.done?"new":""}">${esc(c)}</li>`).join("")}</ol>
     ${s.done?`<div class="g-res ${s.won?"win":"lose"}">${s.won?`Got it in ${s.guesses.length}. It's <b>${esc(a.name)}</b>.`:`Out of guesses. It was <b>${esc(a.name)}</b>.`}</div>
-      <div class="g-act"><button class="enter" data-ath="${a.id}">Walk into ${esc(a.name.split(" ")[0])}'s room →</button><button class="r-copy" id="g-share">Copy result</button></div><p class="note">New case tomorrow.</p>`
+      <div class="g-act"><button class="enter" data-ath="${a.id}" data-door="room">Walk into ${esc(a.name.split(" ")[0])}'s room →</button><button class="r-copy" id="g-share">Copy result</button></div><p class="note">New case tomorrow.</p>`
     :`<div class="g-guess"><input id="g-in" list="g-names" placeholder="Type a name" autocomplete="off" aria-label="Your guess"><datalist id="g-names">${gameNames().map(n=>`<option value="${esc(n)}"></option>`).join("")}</datalist><button class="enter" id="g-go">Guess</button></div>
       <div class="g-tries">${s.guesses.map(g=>`<span>${esc((byId[g]||{}).name||g)}</span>`).join("")}<em>${MAX-s.guesses.length} guess${MAX-s.guesses.length===1?"":"es"} left${s.guesses.length?", next clue unlocked":""}</em></div><p class="g-msg" id="g-msg" aria-live="polite"></p>`}
-    </div></div>`;
+    </div></div>${s.done?doorHTML(a):""}`;
   const cv=el.querySelector(".g-sil"),x=cv.getContext("2d");x.clearRect(0,0,120,170);
   if(s.done){drawFigure(x,a,{x:60,y:160,w:62,lift:0,noShadow:true})}else{const sil={...a,id:a.id,wv:[]};x.save();drawFigure(x,sil,{x:60,y:160,w:62,lift:0,noShadow:true});x.globalCompositeOperation="source-in";x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#222";x.fillRect(0,0,120,170);x.restore();x.fillStyle=getComputedStyle(document.documentElement).getPropertyValue("--panel").trim()||"#fff";x.font="700 34px Cinzel, Georgia, serif";x.textAlign="center";x.textBaseline="middle";x.fillText("?",60,95)}
   const go=el.querySelector("#g-go");if(go){const inp=el.querySelector("#g-in"),msg=el.querySelector("#g-msg");
    const submit=()=>{const v=inp.value.trim().toLowerCase();if(!v)return;const p=(v===a.name.toLowerCase()?a:null)||ALL.filter(q=>q.name.toLowerCase()===v).sort(byTrophies)[0]||ALL.filter(q=>q.name.toLowerCase().includes(v)&&v.length>3).sort(byTrophies)[0];
-    if(!p){msg.textContent="That name isn't in the field yet. Pick one from the list.";return}if(s.guesses.includes(p.id)){msg.textContent="Already guessed.";return}if(!s.guesses.length)TC.t("game_started",{puzzle_no:no});
+    if(!p){msg.textContent="That name isn't in the field yet. Pick one from the list.";return}if(s.guesses.includes(p.id)){msg.textContent="Already guessed.";return}if(!s.guesses.length)TC.t("game_started",{puzzle_no:no,scheduled:hand});
     s.guesses.push(p.id);if(p.id===a.id)finish(true);else if(s.guesses.length>=MAX)finish(false);else store.set("g2:"+key,s);paint();if(!s.done)el.querySelector("#g-in")?.focus()};
    go.onclick=submit;inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();submit()}})}
-  const sh=el.querySelector("#g-share");if(sh)sh.onclick=()=>{const t=shareText();TC.t("game_shared",{puzzle_no:no,won:s.won,guesses:s.guesses.length});const fail=()=>{sh.insertAdjacentHTML("afterend",`<textarea class="g-copy" readonly rows="2">${esc(t)}</textarea>`);const ta=el.querySelector(".g-copy");ta.focus();ta.select();sh.remove()};try{navigator.clipboard.writeText(t).then(()=>{sh.textContent="Copied"},fail)}catch(e){fail()}};
+  const sh=el.querySelector("#g-share");if(sh)sh.onclick=()=>{const t=shareText();TC.t("game_shared",{puzzle_no:no,won:s.won,guesses:s.guesses.length,scheduled:hand});const fail=()=>{sh.insertAdjacentHTML("afterend",`<textarea class="g-copy" readonly rows="2">${esc(t)}</textarea>`);const ta=el.querySelector(".g-copy");ta.focus();ta.select();sh.remove()};try{navigator.clipboard.writeText(t).then(()=>{sh.textContent="Copied"},fail)}catch(e){fail()}};
  }
  paint();
+ gameSeen(el,{puzzle_no:no,scheduled:hand,done:s.done});
 }
 
 // ================= HOMETOWN LEADERBOARD =================
@@ -468,7 +497,8 @@ function render(){
 }
 document.addEventListener("click",e=>{
  const b=e.target.closest("[data-back]");if(b)return back(+b.dataset.back);
- const h=e.target.closest("[data-hub]");if(h){TC.t("hub_opened",{dimension:h.dataset.hub,name:h.dataset.name});return go({v:"hub",dim:h.dataset.hub,name:h.dataset.name})}
+ const dr=e.target.closest("#game [data-door]");if(dr)TC.doorClicked({puzzle_no:puzzleNo(),kind:dr.dataset.door,won:!!store.get("g2:"+todayKey(),{}).won,scheduled:!!scheduled()});
+ const h=e.target.closest("[data-hub]");if(h){TC.t("hub_opened",{dimension:h.dataset.hub,name:h.dataset.name,...TC.page()});return go({v:"hub",dim:h.dataset.hub,name:h.dataset.name})}
  const a=e.target.closest("[data-ath]");if(a){TC.src=a.closest("#game")?"game":a.closest("#who")?"field":query?"search":stack.at(-1).v==="hub"?"hub":stack.at(-1).v==="ath"?"room":"list";return go({v:"ath",id:a.dataset.ath})}
 });
 
